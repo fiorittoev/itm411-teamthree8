@@ -192,45 +192,35 @@ The frontend is an Expo React Native application with the following structure:
 ```
 frontend/
 ├── app/
-│   ├── _layout.tsx             # Root layout component (navigation wrapper)
+│   ├── _layout.tsx             # Root layout component (navigation & auth routing)
+│   ├── auth.tsx                # Authentication screen (Sign in / Sign up)
 │   ├── modal.tsx               # Modal screen component
 │   └── (tabs)/
 │       ├── _layout.tsx         # Tab navigation layout
 │       ├── index.tsx           # Home tab screen
 │       └── explore.tsx         # Explore tab screen
-├── components/
-│   ├── external-link.tsx       # External link component
-│   ├── haptic-tab.tsx          # Haptic feedback component
-│   ├── themed-text.tsx         # Themed text component
-│   ├── themed-view.tsx         # Themed view component
-│   └── ui/                     # Reusable UI components
-│       ├── collapsible.tsx     # Collapsible component
-│       ├── icon-symbol.tsx     # Icon symbol component
-│       └── icon-symbol.ios.tsx # iOS-specific icon component
-├── constants/
-│   └── theme.ts                # Theme colors and styling constants
-├── hooks/
-│   ├── use-color-scheme.ts     # Hook for color scheme (dark/light mode)
-│   ├── use-color-scheme.web.ts # Web-specific color scheme hook
-│   └── use-theme-color.ts      # Hook for theme colors
 ├── services/
 │   ├── api.ts                  # API client for backend communication
-│   └── supabase.ts             # Supabase integration (authentication, database)
+│   └── supabase.ts             # Supabase initialization (authentication)
 ├── assets/
 │   └── images/                 # Static images and assets
+├── scripts/
+│   └── app/                    # Additional app scripts
 ├── package.json                # npm dependencies and scripts
 ├── .env                        # Environment variables (DO NOT commit)
 ├── app.json                    # Expo app configuration
 ├── tsconfig.json               # TypeScript configuration
-└── Dockerfile                  # Docker configuration for frontend
+├── eslint.config.js            # ESLint configuration
+├── Dockerfile                  # Docker configuration for frontend
+└── .expo/                      # Expo configuration (auto-generated)
 ```
 
 **Key Files:**
-- `app/_layout.tsx` - Root navigation setup
+- `app/_layout.tsx` - Root navigation and session management
+- `app/auth.tsx` - Authentication UI and logic
 - `app/(tabs)/` - Tab-based screens (Home, Explore)
-- `components/` - Create reusable UI components here
 - `services/api.ts` - Modify to add API calls to the backend
-- `constants/theme.ts` - Update colors and styling here
+- `services/supabase.ts` - Supabase client configuration
 - `package.json` - Add new npm packages here and run `npm install`
 
 ---
@@ -301,13 +291,24 @@ Docker allows you to run the entire application (database, backend, frontend) in
 
 From the project root directory:
 
+**Run both Mobile and Web:**
 ```powershell
 cd itm411-teamthree8
-docker compose up --build
+docker compose --profile mobile --profile web up --build
 ```
 
-This command will:
-- Build Docker images for backend and frontend
+**Run Mobile only:**
+```powershell
+docker compose --profile mobile up --build
+```
+
+**Run Web only:**
+```powershell
+docker compose --profile web up --build
+```
+
+These commands will:
+- Build Docker images for backend and selected frontend(s)
 - Start PostgreSQL database
 - Start FastAPI backend
 - Start Expo development servers
@@ -344,14 +345,14 @@ docker compose down -v
 
 ## Accessing the Application
 
-Once `docker compose up` is running, you can access:
+Once `docker compose up` is running (with appropriate profiles), you can access:
 
-### 1. **Web Version**
+### 1. **Web Version** (with `--profile web`)
 - URL: http://localhost:8081
 - Open in your browser
 - Hot reload enabled - changes are reflected immediately
 
-### 2. **Expo Mobile Version (Android/iOS Emulator)**
+### 2. **Expo Mobile Version** (with `--profile mobile`)
 
 **Using Expo Go App (Easiest):**
 1. Download "Expo Go" from App Store or Google Play

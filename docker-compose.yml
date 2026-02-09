@@ -21,6 +21,12 @@ services:
       - "19002:19002"
     volumes:
       - ./frontend:/app
+    env_file:
+      - ./frontend/.env
+    profiles:
+      - mobile
+    tty: true
+    stdin_open: true
 
   frontend-web:
     build:
@@ -30,6 +36,10 @@ services:
       - "8081:8081"
     volumes:
       - ./frontend:/app
+    env_file:
+      - ./frontend/.env
+    profiles:
+      - web
 
 
   backend:

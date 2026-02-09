@@ -1,14 +1,15 @@
-// ...existing code...
 import React, { useState } from "react";
 import { View, Text, TextInput, Button, ActivityIndicator, TouchableOpacity } from "react-native";
+import { useRouter } from "expo-router";
 import { supabase } from "../services/supabase";
 
-export default function AuthTab(): JSX.Element {
+export default function AuthTab(){
   const [mode, setMode] = useState<"signIn" | "signUp">("signIn");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const router = useRouter();
 
   async function handleSubmit() {
     setLoading(true);
@@ -17,11 +18,19 @@ export default function AuthTab(): JSX.Element {
       if (mode === "signUp") {
         const { data, error } = await supabase.auth.signUp({ email, password });
         if (error) setMessage(error.message);
-        else setMessage("Sign-up successful. Check your email if verification is required.");
+        else {
+          setMessage("Sign-up successful. Check your email if verification is required.");
+          // Note: You may need to wait for email verification before auto-redirecting
+        }
       } else {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) setMessage(error.message);
-        else setMessage("Signed in successfully.");
+        if (error) {
+          setMessage(error.message);
+        } else {
+          setMessage("Signed in successfully.");
+          // Navigate to the tabs after successful sign-in
+          router.replace("/(tabs)/home");
+        }
       }
     } catch (err: any) {
       setMessage(err?.message ?? "Unexpected error");
@@ -77,4 +86,3 @@ export default function AuthTab(): JSX.Element {
     </View>
   );
 }
-// ...existing code...
