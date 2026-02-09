@@ -8,8 +8,8 @@ COPY . .
 
 # ---------- Mobile (Expo Go / device) ----------
 FROM base AS mobile
-EXPOSE 19000 19001 19002
-CMD ["npx", "expo", "start", "--tunnel"]
+EXPOSE 19001 19002
+CMD ["npx", "expo", "start", "--lan"]
 
 # ---------- Web ----------
 FROM base AS web
