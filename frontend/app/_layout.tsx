@@ -15,7 +15,7 @@ export default function RootLayout() {
     <PaperProvider>
       <Stack>
         <Stack.Screen name="index" options={{ headerShown: false }}/>
-        <Stack.Screen name="auth" options={{ headerShown: false }}/>
+        <Stack.Screen name="options" options={{ headerShown: false }}/>
         {/* Header for tabs */}
         <Stack.Screen name="(tabs)" options={{ headerShown: true, title: '', headerRight: () => (
               <View style={{ marginRight: 10 }}>
@@ -38,14 +38,14 @@ export default function RootLayout() {
                         }
 
                         // Clear navigation history and go to auth
-                        router.replace("/auth");
+                        router.replace("/options");
                       }}
                       title="Logout"
                     />
 
                   <Menu.Item onPress={() => {
                       setVisible(false);
-                      router.push("/account");
+                      router.push("/settings/account");
                     }}
                     title="Account Settings"
                   />
