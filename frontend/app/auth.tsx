@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Button, ActivityIndicator, TouchableOpacity } from "react-native";
+import { StyleSheet,View, Text, TextInput, Button, ActivityIndicator, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { supabase } from "../services/supabase";
 
@@ -14,34 +14,42 @@ export default function AuthTab(){
   async function handleSubmit() {
     setLoading(true);
     setMessage(null);
+
     try {
       if (mode === "signUp") {
         const { data, error } = await supabase.auth.signUp({ email, password });
-        if (error) setMessage(error.message);
-        else {
-          setMessage("Sign-up successful. Check your email if verification is required.");
-          // Note: You may need to wait for email verification before auto-redirecting
-        }
-      } else {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
         if (error) {
           setMessage(error.message);
-        } else {
+        }
+        else {
+          setMessage("Sign-up successful. Check your email if verification is required.");
+        }
+      } 
+      else {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+        if (error) {
+          setMessage(error.message);
+        } 
+        else {
           setMessage("Signed in successfully.");
           // Navigate to the tabs after successful sign-in
           router.replace("/(tabs)/home");
         }
       }
-    } catch (err: any) {
+    } 
+    catch (err: any) {
       setMessage(err?.message ?? "Unexpected error");
-    } finally {
+    } 
+    finally {
       setLoading(false);
     }
   }
 
   return (
-    <View style={{ padding: 16 }}>
-      <Text style={{ fontSize: 20, marginBottom: 12 }}>{mode === "signIn" ? "Sign In" : "Create Account"}</Text>
+    <View style = {styles.view}>
+      <Text style = {styles.prompt}>{mode === "signIn" ? "Sign In" : "Create Account"}</Text>
 
       <Text>Email</Text>
       <TextInput
@@ -51,7 +59,7 @@ export default function AuthTab(){
         autoCapitalize="none"
         autoComplete="email"
         placeholder="you@example.com"
-        style={{ borderWidth: 1, padding: 8, marginBottom: 12 }}
+        style={styles.field}
       />
 
       <Text>Password</Text>
@@ -61,7 +69,7 @@ export default function AuthTab(){
         secureTextEntry
         autoComplete={mode === "signIn" ? "password" : "password-new"}
         placeholder="password"
-        style={{ borderWidth: 1, padding: 8, marginBottom: 12 }}
+        style={styles.field}
       />
 
       {loading ? (
@@ -75,14 +83,36 @@ export default function AuthTab(){
           setMode(mode === "signIn" ? "signUp" : "signIn");
           setMessage(null);
         }}
-        style={{ marginTop: 12 }}
+        style={styles.submit}
       >
-        <Text style={{ color: "blue" }}>
+        <Text style={styles.submit_text}>
           {mode === "signIn" ? "Need an account? Create one" : "Have an account? Sign in"}
         </Text>
       </TouchableOpacity>
 
-      {message ? <Text style={{ marginTop: 12 }}>{message}</Text> : null}
+      {message ? <Text style={styles.submit}>{message}</Text> : null}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+    view: {
+      padding:16
+    },
+    prompt: {
+      fontSize: 20,
+      marginBottom: 12 
+    },
+    field: {
+      borderWidth: 1,
+      padding: 8, 
+      marginBottom: 12
+    },
+    submit: {
+      marginTop: 12,
+    },
+    submit_text:{
+      color: "blue"
+    }
+  }
+);

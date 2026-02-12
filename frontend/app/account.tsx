@@ -1,9 +1,9 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-export default function ModalScreen() {
+export default function AccountScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Modal Screen</Text>
+      <Text style={styles.title}>Account</Text>
     </View>
   );
 }

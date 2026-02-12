@@ -12,17 +12,17 @@ export default function RootIndex() {
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
           router.replace('/(tabs)/home');
-        } else {
+        } 
+        else {
           router.replace('/auth');
         }
-      } catch (err) {
+      } 
+      catch (err) {
         console.error('Error checking session:', err);
         router.replace('/auth');
       }
     };
-
     checkSession();
-  }, [router]);
-
+  },[router]);
   return <View style={{ flex: 1 }} />;
 }
