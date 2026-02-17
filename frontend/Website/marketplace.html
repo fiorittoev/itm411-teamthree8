@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Marketplace</title>
+
+  <link rel="stylesheet" href="style.css" />
+
+  <script type="module"
+    src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js">
+  </script>
+</head>
+
+<body>
+
+<!-- DELETE CONFIRM MODAL -->
+<div class="modal" id="deletePostModal">
+
+  <div class="modal-content">
+
+    <h3>Delete this item?</h3>
+
+    <div class="modal-actions">
+
+      <button id="cancelDelete">Cancel</button>
+
+      <button id="confirmDelete" class="danger-btn">
+        Confirm
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- ADD ITEM MODAL -->
+<div class="modal" id="addItemModal">
+
+  <div class="modal-content">
+
+    <h2>Add New Listing</h2>
+
+    <form id="addItemForm">
+
+      <input type="text" id="itemName" placeholder="Item Name" required />
+
+      <input type="number" id="itemPrice" placeholder="Price" required />
+
+      <textarea id="itemDesc" placeholder="Description" required></textarea>
+
+      <input type="file" id="itemImage" accept="image/*" required />
+
+      <div class="modal-actions">
+        <button type="button" id="cancelModal">Cancel</button>
+        <button type="submit">Post</button>
+      </div>
+
+    </form>
+
+  </div>
+
+</div>
+
+
+<!-- ITEM DETAIL MODAL -->
+<div class="modal" id="itemDetailModal">
+
+  <div class="detail-content">
+
+    <!-- LEFT: IMAGES -->
+    <div class="detail-images" id="detailImages"></div>
+
+    <!-- RIGHT: INFO -->
+    <div class="detail-info">
+
+      <h2 id="detailName"></h2>
+
+      <h3 id="detailPrice"></h3>
+
+      <p id="detailSeller"></p>
+    
+      <p id="detailDesc"></p>
+
+
+      <button class="fav-btn">♡ Favorite</button>
+
+      <button id="deleteItemBtn" class="danger-btn">
+        Delete Listing
+      </button>
+
+
+      <div class="contact-box">
+        <h4>Contact Info</h4>
+        <p>Email: Coming soon</p>
+        <p>Phone: Coming soon</p>
+      </div>
+
+      <button id="closeDetail">Close</button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- NAVBAR -->
+<header class="navbar">
+
+  <div class="logo">MyMichiganLake</div>
+
+  <div class="nav-icons">
+    <ion-icon name="home-outline" id="homeBtn"></ion-icon>
+    <ion-icon name="cart-outline" id="cartNav"></ion-icon>
+    <ion-icon name="settings-outline"></ion-icon>
+  </div>
+
+  <div class="profile">
+    <ion-icon name="person-outline"></ion-icon>
+  </div>
+
+</header>
+
+
+<!-- PAGE CONTENT -->
+<main class="market-layout">
+
+  <section class="marketplace">
+
+    <div class="market-header">
+
+  <div class="market-header-left">
+    <h2 class="market-title">Marketplace</h2>
+
+    <div class="market-filters">
+      <button>All Listings</button>
+      <button>Your Listings</button>
+      <button>Favorites</button>
+    </div>
+  </div>
+
+  <button class="add-btn" id="marketPlusBtn">+</button>
+
+</div>
+
+
+
+    <div class="market-grid" id="marketGrid">
+
+      <div class="market-card">+</div>
+      <div class="market-card">+</div>
+      <div class="market-card">+</div>
+      <div class="market-card">+</div>
+      <div class="market-card">+</div>
+      <div class="market-card">+</div>
+
+    </div>
+
+  </section>
+
+</main>
+
+
+<!-- SCRIPTS -->
+<script src="script.js"></script>
+<script src="market.js"></script>
+<script src="nav.js"></script>
+
+</body>
+</html>
