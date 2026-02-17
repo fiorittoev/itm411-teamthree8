@@ -16,6 +16,7 @@ export default function RootLayout() {
       <Stack>
         <Stack.Screen name="index" options={{ headerShown: false }}/>
         <Stack.Screen name="options" options={{ headerShown: false }}/>
+        <Stack.Screen name="register" options={{ headerShown: false }}/>
         {/* Header for tabs */}
         <Stack.Screen name="(tabs)" options={{ headerShown: true, title: '', headerRight: () => (
               <View style={{ marginRight: 10 }}>

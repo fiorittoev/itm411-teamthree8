@@ -1,62 +1,68 @@
-import { View, Text, TouchableOpacity, TextInput } from "react-native"
+import { View, Text, TextInput } from "react-native"
+import { useEffect } from "react"
 import { globalStyles } from "../styles/globalStyles"
-import { useRouter } from "expo-router"
-import { useState } from "react";
+import { useRegister } from "../context/RegisterContext"
 
 export default function EmailStep() {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
+  const { data, updateField, setStepValid } = useRegister()
 
-    const router = useRouter()
+  useEffect(() => {
+    const validEmail = /\S+@\S+\.\S+/.test(data.email)
+    const validPassword = data.password.length >= 6
+    const passwordsMatch = data.password === data.confirmPassword
 
-    return (
-    <View>
-        <Text>Register</Text>
-        <Text>Create an account by filling in the information below</Text>
+    setStepValid(validEmail && validPassword && passwordsMatch)
+  }, [data.email, data.password, data.confirmPassword])
 
-        <Text>Email</Text>
-              <TextInput
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoComplete="email"
-                placeholder="you@example.com"
-                style={globalStyles.field}
-              />
-        
-        <Text>Password</Text>
-              <TextInput
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-                placeholder="password"
-                style={globalStyles.field}
-              />
+  return (
+    <View style={{ padding: 20 }}>
+      <Text style={{ fontSize: 22, marginBottom: 10 }}>Register</Text>
+      <Text style={{ marginBottom: 20 }}>
+        Create an account by filling in the information below
+      </Text>
 
-        <Text>Confirm Password</Text>
-              <TextInput
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                secureTextEntry
-                placeholder="confirm password"
-                style={globalStyles.field}
-              />
+      <Text>Email</Text>
+      <TextInput
+        value={data.email}
+        onChangeText={(text) => updateField("email", text)}
+        keyboardType="email-address"
+        autoCapitalize="none"
+        autoComplete="email"
+        placeholder="you@example.com"
+        style={globalStyles.field}
+      />
 
-        <TouchableOpacity
-                style={globalStyles.button}
-                onPress={() => router.push("/register")}
-        >
-                <Text style={globalStyles.buttonText}>Register</Text>
-        </TouchableOpacity>
+      <Text>Password</Text>
+      <TextInput
+        value={data.password}
+        onChangeText={(text) => updateField("password", text)}
+        secureTextEntry
+        placeholder="Password (min 6 characters)"
+        style={globalStyles.field}
+      />
 
-        <Text>Already have an account?</Text>
-        <Text onPress={() => {router.replace("/login") }}>
-            Login Here
+      <Text>Confirm Password</Text>
+      <TextInput
+        value={data.confirmPassword}
+        onChangeText={(text) => updateField("confirmPassword", text)}
+        secureTextEntry
+        placeholder="Confirm password"
+        style={globalStyles.field}
+      />
+
+      {data.password &&
+        data.confirmPassword &&
+        data.password !== data.confirmPassword && (
+          <Text style={{ color: "red", marginTop: 5 }}>
+            Passwords do not match
+          </Text>
+        )}
+
+      {data.email && !/\S+@\S+\.\S+/.test(data.email) && (
+        <Text style={{ color: "red", marginTop: 5 }}>
+          Enter a valid email address
         </Text>
-        <Text>Or sign up with</Text>
-        
+      )}
     </View>
-    )
+  )
 }

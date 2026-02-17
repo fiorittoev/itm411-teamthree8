@@ -1,7 +1,10 @@
-import { View, Text } from "react-native"
-import { Slot, usePathname, useRouter } from "expo-router"
-import { useMemo } from "react"
-import { StyleSheet, Button } from "react-native"
+import { View, Text, TouchableOpacity } from "react-native"
+import { Slot, usePathname, useRouter,Stack } from "expo-router"
+import { StyleSheet, Button} from "react-native"
+import { RegisterProvider, useRegister } from "../context/RegisterContext"
+import { globalStyles } from "../styles/globalStyles"
+import { supabase } from "../../services/supabase"
+import { useState, useMemo } from "react"
 
 const steps = [
   "/register",
@@ -9,40 +12,100 @@ const steps = [
   "/register/display-name",
   "/register/about",
   "/register/interests",
+  "/register/items",
+  "/register/review",
+  "/register/end"
 ] as const
 
 export default function RegisterLayout() {
+  return (
+    <RegisterProvider>
+      <RegisterContent/>
+    </RegisterProvider>
+  )
+}
+function RegisterContent() {
+  const { data, isStepValid } = useRegister()
+  const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState<string | null>(null)
+  
   const pathname = usePathname()
   const router = useRouter()
 
   const currentStep = useMemo(() => {
-    return steps.findIndex((step) => step === pathname)
+    const index = steps.findIndex((step) => step === pathname)
+    return index === -1 ? 0 : index
   }, [pathname])
 
   const progress = (currentStep + 1) / steps.length
 
-  function handleNext() {
-    if (currentStep < steps.length - 1) {
-      router.push(steps[currentStep + 1])
-    } 
-    else {
-      router.replace("/home") // Navigate to home after the last step
+  async function handleSubmit() {
+    setLoading(true)
+    setMessage(null)
+    try {
+      const { data: authData, error: authError } =
+        await supabase.auth.signUp({
+          email: data.email,
+          password: data.password,
+        })
+      if (authError) return setMessage(authError.message)
+
+      const user = authData.user
+      if (!user) return setMessage("User creation failed.")
+
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .insert({
+          id: user.id,
+          username: data.name,
+          address: data.address,
+          community: data.community,
+          bio: data.bio,
+        })
+
+      if (profileError) return setMessage(profileError.message)
+
+      router.replace("/(tabs)/home")
+    } catch (err: any) {
+      setMessage(err?.message ?? "Unexpected error")
+    } finally {
+      setLoading(false)
     }
   }
 
+  async function handleNext() {
+    if (!isStepValid) return
+    if (currentStep === steps.length - 1) {
+      await handleSubmit()
+      return
+    }
+    router.push(steps[currentStep + 1])
+  }
+
   return (
-    <View style={{ flex: 1, justifyContent: "space-between" }}>
+    <View style={globalStyles.container}>
+      {currentStep > 0 && (
+        <TouchableOpacity onPress={() => router.back()}>
+          <Text style={{ fontSize: 16 }}>← Back</Text>
+        </TouchableOpacity>
+      )}
+
       <Text>Profile Setup</Text>
-      {/* Step Content */}
-      <View style={{ flex: 1 }}>
+
+      <View style={globalStyles.slotContainer}>
         <Slot />
       </View>
 
-      {/* Bottom Section */}
-      <View style={styles.bottom_view}>
-        <Button title="Next" onPress={handleNext} />
+      {message && <Text style={{ color: "red" }}>{message}</Text>}
 
-        <View style={styles.view}>
+      <View style={globalStyles.bottomContainer}>
+        <Button
+          title={currentStep === steps.length - 1 ? "Create Account" : "Next"}
+          onPress={handleNext}
+          disabled={!isStepValid || loading}
+        />
+
+        <View style={globalStyles.progressBarBackground}>
           <View
             style={{
               width: `${progress * 100}%`,
@@ -56,15 +119,3 @@ export default function RegisterLayout() {
     </View>
   )
 }
-
-const styles = StyleSheet.create({
-    view:{
-        height: 6,
-        backgroundColor: "#ccc",
-        marginTop: 10,
-        borderRadius: 4,
-    },
-    bottom_view:{
-        padding: 20 
-    }
-});

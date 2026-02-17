@@ -3,7 +3,7 @@ import { globalStyles } from "./styles/globalStyles"
 import { useRouter } from "expo-router"
 
 
-export default function LocationStep() {
+export default function Options() {
   const router = useRouter()
 
   return (

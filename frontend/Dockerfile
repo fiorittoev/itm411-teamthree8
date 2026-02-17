@@ -1,18 +1,18 @@
-FROM node:20 AS base
+# Use Node 20
+FROM node:20
+
+# Set working directory
 WORKDIR /app
 
+# Copy package files and install dependencies
 COPY package*.json ./
 RUN npm install
 
+# Copy the rest of the project (including .env)
 COPY . .
 
-# ---------- Mobile (Expo Go / device) ----------
-FROM base AS mobile
-EXPOSE 19001 19002
+# Expose ports for Expo
+EXPOSE 19000 19001 19002 8081
+
+# Start Expo with tunnel (works for mobile & web)
 CMD ["npx", "expo", "start", "--tunnel"]
-
-
-# ---------- Web ----------
-FROM base AS web
-EXPOSE 8081
-CMD ["npx", "expo", "start", "--web"]

@@ -37,4 +37,29 @@ export const globalStyles = StyleSheet.create({
     padding: 8, 
     marginBottom: 12
   },
+  headerText: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  slotContainer: {
+    flex: 1,
+  },
+  bottomContainer: {
+    marginTop: 10,
+  },
+  nextButton: {
+    marginBottom: 10,
+  },
+  progressBarBackground: {
+    height: 6,
+    backgroundColor: "#ccc",
+    borderRadius: 4,
+    overflow: "hidden",
+  },
+  progressBarFill: {
+    height: "100%",
+    backgroundColor: "green",
+    borderRadius: 4,
+  },
 })
