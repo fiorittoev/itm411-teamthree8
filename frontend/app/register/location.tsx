@@ -1,4 +1,4 @@
-import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, FlatList } from "react-native"
+import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator } from "react-native"
 import { useEffect, useState, useRef } from "react"
 import { globalStyles } from "../styles/globalStyles"
 import { useRegister } from "../context/RegisterContext"
@@ -34,36 +34,35 @@ export default function LocationStep() {
   const [addressConfirmed, setAddressConfirmed] = useState(false)
   const [loading, setLoading] = useState(false)
   const [searched, setSearched] = useState(false)
+  const [addressTaken, setAddressTaken] = useState(false)
+  const [checkingAddress, setCheckingAddress] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const API_URL = process.env.EXPO_PUBLIC_API_URL
 
   const fullAddress = [
     address.street, address.apt, address.city,
-    address.state && address.zipcode ? `${address.state} ${address.zipcode}` : address.state || address.zipcode,
+    address.state && address.zipcode
+      ? `${address.state} ${address.zipcode}`
+      : address.state || address.zipcode,
     address.country,
   ].filter(Boolean).join(", ")
 
   useEffect(() => {
-    setStepValid(addressConfirmed && !!data.community)
-  }, [addressConfirmed, data.community])
+    setStepValid(addressConfirmed && !!data.community && !addressTaken && !checkingAddress)
+  }, [addressConfirmed, data.community, addressTaken, checkingAddress])
 
-  // Debounced autocomplete fetch
   function handleInputChange(text: string) {
     setInputText(text)
     setAddressConfirmed(false)
     setSuggestions([])
-
     if (debounceRef.current) clearTimeout(debounceRef.current)
     if (text.length < 3) return
-
     debounceRef.current = setTimeout(() => fetchSuggestions(text), 400)
   }
 
   async function fetchSuggestions(input: string) {
     try {
-      const res = await fetch(
-      `${API_URL}/maps/autocomplete?input=${encodeURIComponent(input)}`
-    )
+      const res = await fetch(`${API_URL}/maps/autocomplete?input=${encodeURIComponent(input)}`)
       const json = await res.json()
       setSuggestions(json.predictions?.slice(0, 5) ?? [])
     } catch (err) {
@@ -71,15 +70,29 @@ export default function LocationStep() {
     }
   }
 
+  async function checkAddressUniqueness(address: string) {
+    setCheckingAddress(true)
+    setAddressTaken(false)
+    try {
+      const { data: existing } = await supabase
+        .from("profiles")
+        .select("id")
+        .ilike("address", `%${address}%`)
+        .maybeSingle()
+
+      setAddressTaken(!!existing)
+    } catch (err) {
+      console.error("Address check error:", err)
+    } finally {
+      setCheckingAddress(false)
+    }
+  }
+
   async function selectSuggestion(suggestion: Suggestion) {
     setSuggestions([])
     setInputText(suggestion.description)
-
     try {
-      // Fetch full place details to get address components
-    const res = await fetch(
-      `${API_URL}/maps/place-details?place_id=${suggestion.place_id}`
-    )
+      const res = await fetch(`${API_URL}/maps/place-details?place_id=${suggestion.place_id}`)
       const json = await res.json()
       const components = json.result?.address_components ?? []
 
@@ -99,9 +112,19 @@ export default function LocationStep() {
 
       setAddress(parsed)
       setAddressConfirmed(true)
-      updateField("address", fullAddress)
 
-      // Kick off lake search with coords from place details
+      const computedAddress = [
+        parsed.street,
+        parsed.city,
+        parsed.state && parsed.zipcode
+          ? `${parsed.state} ${parsed.zipcode}`
+          : parsed.state || parsed.zipcode,
+        parsed.country,
+      ].filter(Boolean).join(", ")
+
+      updateField("address", computedAddress)
+      checkAddressUniqueness(computedAddress)
+
       const { lat, lng } = json.result.geometry.location
       findNearbyLakes(lat, lng)
     } catch (err) {
@@ -115,9 +138,8 @@ export default function LocationStep() {
     try {
       const placesRes = await fetch(`${API_URL}/maps/nearby-lakes?lat=${lat}&lng=${lng}`)
       const placesData = await placesRes.json()
-      const lakeNames: string[] = (placesData.results || [])
-        .slice(0, 5)
-        .map((lake: any) => lake.name)
+      const rawResults = (placesData.results || []).slice(0, 5)
+      const lakeNames: string[] = rawResults.map((lake: any) => lake.name)
 
       if (!lakeNames.length) {
         setLakeOptions([])
@@ -130,9 +152,12 @@ export default function LocationStep() {
         .select("id, name")
         .in("name", lakeNames)
 
-      const merged: LakeOption[] = lakeNames.map((name) => {
-        const existing = existingCommunities?.find((c) => c.name === name)
-        return { name, id: existing?.id ?? null }
+      const merged: LakeOption[] = rawResults.map((lake: any) => {
+        const existing = existingCommunities?.find((c) => c.name === lake.name)
+        return {
+          name: lake.name,
+          id: existing?.id ?? null,
+        }
       })
 
       setLakeOptions(merged)
@@ -146,28 +171,9 @@ export default function LocationStep() {
   }
 
   async function selectCommunity(lake: LakeOption) {
-  let communityId = lake.id
-
-  if (!communityId) {
-    const { data: newCommunity, error } = await supabase
-      .from("communities")
-      .insert({ name: lake.name })
-      .select("id")
-      .single()
-
-    if (error) {
-      console.error("Failed to create community:", error.message)
-      return
-    }
-    communityId = newCommunity.id
-    setLakeOptions((prev) =>
-      prev.map((l) => l.name === lake.name ? { ...l, id: communityId } : l)
-    )
+    updateField("community", lake.name)
+    updateField("communityId", lake.id ?? undefined)
   }
-
-  updateField("community", lake.name)
-  updateField("communityId", communityId ?? undefined)  // convert null → undefined
-}
 
   const labelStyle = { fontSize: 13, color: "#555", marginBottom: 3 }
   const fieldStyle = [globalStyles.field, { marginBottom: 10 }]
@@ -186,7 +192,6 @@ export default function LocationStep() {
           style={[fieldStyle, { marginBottom: 0 }]}
         />
 
-        {/* Suggestions dropdown */}
         {suggestions.length > 0 && (
           <View style={{
             position: "absolute", top: "100%", left: 0, right: 0,
@@ -213,7 +218,7 @@ export default function LocationStep() {
         )}
       </View>
 
-      {/* Apt field — always visible */}
+      {/* Apt field */}
       <Text style={[labelStyle, { marginTop: 10 }]}>Apt, Suite, Unit (optional)</Text>
       <TextInput
         value={address.apt}
@@ -226,16 +231,34 @@ export default function LocationStep() {
       {addressConfirmed && (
         <View style={{
           marginTop: 4, marginBottom: 20, padding: 14,
-          backgroundColor: "#f8f9fa", borderRadius: 10,
-          borderLeftWidth: 4, borderLeftColor: "#1976d2",
+          backgroundColor: addressTaken ? "#fff3e0" : "#f8f9fa",
+          borderRadius: 10,
+          borderLeftWidth: 4,
+          borderLeftColor: addressTaken ? "#e65100" : checkingAddress ? "#bbb" : "#1976d2",
         }}>
-          <Text style={{ fontSize: 12, color: "#999", marginBottom: 4 }}>Address on file</Text>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 4 }}>
+            {checkingAddress
+              ? <ActivityIndicator size="small" color="#999" />
+              : <Text style={{ fontSize: 12, color: addressTaken ? "#e65100" : "#999" }}>
+                  {addressTaken ? "⚠ Address already registered" : "Address on file"}
+                </Text>
+            }
+          </View>
           <Text style={{ fontSize: 15, color: "#222", fontWeight: "500" }}>{fullAddress}</Text>
+          {addressTaken && (
+            <Text style={{ fontSize: 12, color: "#bf360c", marginTop: 4 }}>
+              An account is already associated with this address. If this is you, try signing in instead.
+            </Text>
+          )}
           <TouchableOpacity onPress={() => {
             setAddressConfirmed(false)
             setInputText("")
             setLakeOptions([])
             setSearched(false)
+            setAddressTaken(false)
+            setCheckingAddress(false)
+            updateField("community", "")
+            updateField("communityId", undefined)
           }}>
             <Text style={{ color: "#1976d2", fontSize: 13, marginTop: 6 }}>Change address</Text>
           </TouchableOpacity>

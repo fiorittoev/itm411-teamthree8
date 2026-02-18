@@ -36,6 +36,26 @@ export default function ReviewStep() {
           </View>
         </View>
       )}
+
+        {(data.items ?? []).length > 0 && (
+    <View>
+      <Text style={{ fontWeight: "600", marginBottom: 6 }}>Items</Text>
+      {data.items.map((item, i) => (
+        <View key={i} style={{
+          backgroundColor: "#f5f5f5", borderRadius: 8,
+          padding: 10, marginBottom: 6,
+        }}>
+          <Text style={{ fontWeight: "500" }}>{item.name}
+            <Text style={{ fontWeight: "400", color: "#888" }}> · {item.category}</Text>
+          </Text>
+          {!!item.description && (
+            <Text style={{ color: "#666", fontSize: 13 }}>{item.description}</Text>
+          )}
+        </View>
+      ))}
+    </View>
+  )}
+
     </View>
   )
 }

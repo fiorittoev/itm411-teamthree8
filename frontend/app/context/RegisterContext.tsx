@@ -6,11 +6,12 @@ export type RegisterData = {
   password: string
   confirmPassword: string
   address: string
-  community: string       // selected community name
-  communityId?: string    // optional: selected community ID from backend
+  community: string 
+  communityId?: string 
   bio: string
   interests: string[]
   profileImageUrl?: string
+  items: { name: string; description: string; category: string }[]
 }
 
 type RegisterContextType = {
@@ -36,6 +37,7 @@ export function RegisterProvider({ children }: { children: ReactNode }) {
     interests: [],
     profileImageUrl: undefined,
     communityId: undefined,
+    items: []
   })
 
   const [isStepValid, setStepValid] = useState(false)

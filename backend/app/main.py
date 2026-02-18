@@ -95,5 +95,5 @@ async def nearby_lakes(lat: float = Query(...), lng: float = Query(...)):
             },
         )
     data = res.json()
-    lakes = [r["name"] for r in (data.get("results") or [])[:5]]
-    return {"lakes": lakes}
+    # Return results as-is so frontend can access .name on each object
+    return {"results": (data.get("results") or [])[:5]}
