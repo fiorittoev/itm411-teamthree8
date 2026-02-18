@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MyMichiganLake</title>
+
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Icons -->
+  <script type="module"
+    src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js">
+  </script>
+
+  <script nomodule
+    src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js">
+  </script>
+</head>
+
+
+<body>
+
+<!-- ================= ITEM DETAIL MODAL ================= -->
+<div class="modal" id="itemDetailModal">
+
+  <div class="detail-content">
+
+    <div class="detail-images" id="detailImages"></div>
+
+    <div class="detail-info">
+
+      <h2 id="detailName"></h2>
+      <h3 id="detailPrice"></h3>
+      <p id="detailSeller"></p>
+      <p id="detailDesc"></p>
+
+      <button class="fav-btn">♡ Favorite</button>
+
+      <button id="deleteItemBtn" class="danger-btn">
+        Delete Listing
+      </button>
+
+      <div class="contact-box">
+        <strong>Contact Info</strong>
+        <p>Email: Coming soon</p>
+        <p>Phone: Coming soon</p>
+      </div>
+
+      <button id="closeDetail">Close</button>
+
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ================= DELETE CONFIRM MODAL ================= -->
+<div class="modal" id="deletePostModal">
+
+  <div class="modal-content">
+
+    <h3>Delete this item?</h3>
+
+    <div class="modal-actions">
+      <button id="cancelDelete">Cancel</button>
+      <button id="confirmDelete" class="danger-btn">Confirm</button>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ================= CREATE POST MODAL ================= -->
+<div class="modal" id="createPostModal">
+
+  <div class="modal-content">
+
+    <h3>Create Post</h3>
+
+    <textarea
+      id="postInput"
+      placeholder="What’s happening at the lake?"
+      rows="4"
+      style="width:100%; resize:none; padding:10px;"
+    ></textarea>
+
+    <div class="modal-actions">
+
+      <button id="cancelPost">Cancel</button>
+
+      <button id="submitPost" class="post-btn">
+        Post
+      </button>
+
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ================= NAVBAR ================= -->
+<header class="navbar">
+
+  <div class="logo">MyMichiganLake</div>
+
+  <div class="nav-icons">
+    <ion-icon name="home-outline" id="homeBtn"></ion-icon>
+    <ion-icon name="cart-outline" id="cartNav"></ion-icon>
+    <ion-icon name="settings-outline"></ion-icon>
+  </div>
+
+  <div class="profile">
+    <ion-icon name="person-outline"></ion-icon>
+  </div>
+
+</header>
+
+
+<!-- ================= MAIN LAYOUT ================= -->
+<main class="layout">
+
+
+  <!-- LEFT PANEL -->
+  <aside class="left-panel">
+
+    <h2>Local Listings</h2>
+
+    <div class="filters">
+      <button id="allListingsBtn">All Listings</button>
+      <button>Your Listings</button>
+      <button>Favorites</button>
+    </div>
+
+    <div class="listing-grid" id="listingPreview"></div>
+
+    <button class="shop-btn" id="shopBtn">
+      Shop Your Lake
+    </button>
+
+  </aside>
+
+
+  <!-- CENTER FEED -->
+  <section class="feed">
+
+    <div class="feed-header">
+      <h3>Posts</h3>
+      <button class="add-btn" id="plusBtn">+</button>
+    </div>
+
+    <div id="posts"></div>
+
+  </section>
+
+
+  <!-- RIGHT PANEL -->
+  <aside class="right-panel">
+
+    <div class="side-item">
+      <ion-icon name="people-outline"></ion-icon>
+      <p>Friends</p>
+    </div>
+
+    <div class="side-item">
+      <ion-icon name="mail-outline"></ion-icon>
+      <p>Mail</p>
+    </div>
+
+  </aside>
+
+</main>
+
+
+<!-- ================= SCRIPTS ================= -->
+<script src="script.js"></script>
+<script src="market.js"></script>
+<script src="preview.js"></script>
+<script src="nav.js"></script>
+
+</body>
+</html>
