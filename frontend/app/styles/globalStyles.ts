@@ -1,65 +1,47 @@
 import { StyleSheet } from "react-native"
 
+/**
+ * Global shared styles that can be used across all modules.
+ * Module-specific styles should be in their respective stylesheets:
+ * - styles/main/mainStyles.ts - for main app screens
+ * - styles/register/registerStyles.ts - for registration flow
+ * - styles/auth/authStyles.ts - for authentication screens
+ * - styles/settings/settingsStyles.ts - for settings screens
+ */
 export const globalStyles = StyleSheet.create({
-  container: {
+  // Common layout utilities
+  flex1: {
     flex: 1,
-    padding: 20,
-    backgroundColor: "#4f6d87",
   },
-
   centered: {
     justifyContent: "center",
     alignItems: "center",
   },
-
-  title: {
-    fontSize: 22,
-    fontWeight: "600",
-    color: "white",
-    marginBottom: 20,
-    textAlign: "center",
+  row: {
+    flexDirection: "row",
   },
-
-  button: {
-    backgroundColor: "#1e3a5f",
-    padding: 15,
-    borderRadius: 8,
-    marginBottom: 15,
-    alignItems: "center",
+  column: {
+    flexDirection: "column",
   },
-
-  buttonText: {
-    color: "white",
-    fontWeight: "600",
+  
+  // Common spacing
+  paddingSmall: {
+    padding: 8,
   },
-  field: {
-    borderWidth: 1,
-    padding: 8, 
-    marginBottom: 12
+  paddingMedium: {
+    padding: 16,
   },
-  headerText: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 10,
+  paddingLarge: {
+    padding: 24,
   },
-  slotContainer: {
-    flex: 1,
+  
+  marginSmall: {
+    margin: 8,
   },
-  bottomContainer: {
-    marginTop: 10,
+  marginMedium: {
+    margin: 16,
   },
-  nextButton: {
-    marginBottom: 10,
-  },
-  progressBarBackground: {
-    height: 6,
-    backgroundColor: "#ccc",
-    borderRadius: 4,
-    overflow: "hidden",
-  },
-  progressBarFill: {
-    height: "100%",
-    backgroundColor: "green",
-    borderRadius: 4,
+  marginLarge: {
+    margin: 24,
   },
 })

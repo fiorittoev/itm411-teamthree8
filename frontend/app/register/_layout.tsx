@@ -3,8 +3,7 @@ import { View, Text, TouchableOpacity, Button } from "react-native"
 import { Slot, usePathname, useRouter} from "expo-router"
 import { RegisterProvider, useRegister } from "../context/RegisterContext"
 import { supabase } from "../../services/supabase"
-import { globalStyles } from "../styles/globalStyles"
-
+import { registerStyles as s, COLORS } from "../styles/register/registerStyles"
 // Routes for each step in the registration flow, used for navigation and progress tracking
 const steps = [
   "/register",
@@ -47,75 +46,41 @@ function RegisterContent() {
   const progress = (currentStep + 1) / steps.length
 
   async function handleSubmit() {
-    // Adjust loading and message states
     setLoading(true)
     setMessage(null)
 
-    // Attempt to create user, profile, and items in a single flow
     try {
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: data.email,
-        password: data.password,
-      })
-      
-      if (authError) 
-        return setMessage(authError.message)
-
-      const user = authData.user
-      if (!user) 
-        return setMessage("User creation failed.")
-
-      // Create community if it didn't already exist
-      let communityId = data.communityId
-      if (!communityId && data.community) {
-        const { data: newCommunity, error: communityError } = await supabase
-          .from("communities")
-          .insert({ name: data.community })
-          .select("id")
-          .single()
-
-        if (communityError) 
-          return setMessage("Failed to create community: " + communityError.message)
-        
-        communityId = newCommunity.id
-      }
-
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .insert({
-          id: user.id,
+      // Register everything through backend
+      await fetch(`${process.env.EXPO_PUBLIC_API_URL}/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: data.email,
+          password: data.password,
           username: data.name,
           address: data.address,
           community: data.community,
-          community_id: communityId,
           bio: data.bio,
-        })
+          items: data.items ?? [],
+        }),
+      }).then(async res => {
+        if (!res.ok) {
+          const err = await res.json()
+          throw new Error(err.detail ?? 'Registration failed')
+        }
+      })
 
-      if (profileError) 
-        return setMessage(profileError.message)
+      // Sign in after successful registration
+      const { error } = await supabase.auth.signInWithPassword({
+        email: data.email,
+        password: data.password,
+      })
+      if (error) throw new Error(error.message)
 
-      if (data.items?.length) {
-        const { error: itemsError } = await supabase
-          .from("items")
-          .insert(
-            data.items.map((item) => ({
-              owner_id: user.id,
-              name: item.name,
-              description: item.description || null,
-              category: item.category,
-            }))
-          )
-
-        if (itemsError)
-          return setMessage(itemsError.message)
-      }
-
-      router.replace("/(tabs)/home")
-    } 
-    catch (err: any) {
-      setMessage(err?.message ?? "Unexpected error")
-    } 
-    finally {
+      router.replace('/main')
+    } catch (err: any) {
+      setMessage(err?.message ?? 'Unexpected error')
+    } finally {
       setLoading(false)
     }
   }
@@ -133,36 +98,34 @@ function RegisterContent() {
   }
 
   return (
-    <View style={globalStyles.container}>
+    <View style={s.container}>
       {currentStep !== 7 && (
         <TouchableOpacity onPress={() => router.back()}>
-          <Text style={{ fontSize: 16 }}>← Back</Text>
+          <Text style={s.backButton}>← Back</Text>
         </TouchableOpacity>
       )}
 
-      <Text>Profile Setup</Text>
+      <Text style={s.titleLarge}>Profile Setup</Text>
 
-      <View style={globalStyles.slotContainer}>
+      <View style={s.section}>
         <Slot />
       </View>
 
-      {message && <Text style={{ color: "red" }}>{message}</Text>}
+      {message && <Text style={s.errorText}>{message}</Text>}
 
-      <View style={globalStyles.bottomContainer}>
+      <View style={s.section}>
         <Button
           title={currentStep === steps.length - 1 ? "Create Account" : "Next"}
           onPress={handleNext}
           disabled={!isStepValid || loading}
         />
 
-        <View style={globalStyles.progressBarBackground}>
+        <View style={s.progressBackground}>
           <View
-            style={{
-              width: `${progress * 100}%`,
-              height: "100%",
-              backgroundColor: "green",
-              borderRadius: 4,
-            }}
+            style={[
+              s.progressFillDynamic,
+              { width: `${progress * 100}%` }
+            ]}
           />
         </View>
       </View>

@@ -1,5 +1,5 @@
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native"
-import { globalStyles } from "./styles/globalStyles"
+import { View, Text, TouchableOpacity } from "react-native"
+import { authStyles as s } from "./styles/auth/authStyles"
 import { useRouter } from "expo-router"
 
 
@@ -7,28 +7,28 @@ export default function Options() {
   const router = useRouter()
 
   return (
-    <View style={globalStyles.container}>
-      <Text style={globalStyles.title}>Choose your location</Text>
+    <View style={s.container}>
+      <Text style={s.title}>Choose your location</Text>
 
       <TouchableOpacity
-        style={globalStyles.button}
+        style={s.button}
         onPress={() => router.push("/login")}
       >
-        <Text style={globalStyles.buttonText}>Login</Text>
+        <Text style={s.buttonText}>Login</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
-        style={globalStyles.button}
+        style={s.button}
         onPress={() => router.push("/register")}
       >
-        <Text style={globalStyles.buttonText}>Register</Text>
+        <Text style={s.buttonText}>Register</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
-        style={globalStyles.button}
-        onPress={() => router.replace("/home")}
+        style={s.button}
+        onPress={() => router.replace("/main")}
       >
-        <Text style={globalStyles.buttonText}>Guest</Text>
+        <Text style={s.buttonText}>Guest</Text>
       </TouchableOpacity>
     </View>
   )

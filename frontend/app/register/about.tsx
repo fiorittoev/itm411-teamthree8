@@ -1,6 +1,6 @@
 import { View, Text, TextInput,Keyboard } from "react-native"
 import { useEffect } from "react"
-import { globalStyles } from "../styles/globalStyles"
+import { registerStyles as s } from "../styles/register/registerStyles"
 import { useRegister } from "../context/RegisterContext"
 
 export default function AboutStep() {
@@ -16,12 +16,12 @@ export default function AboutStep() {
   }, [data.bio])
 
   return (
-    <View style={{ padding: 20 }}>
-      <Text style={{ fontSize: 20, marginBottom: 10 }}>
+    <View style={s.paddingContainer}>
+      <Text style={s.titleMedium}>
         Tell others a bit about yourself in your own words.
       </Text>
 
-      <Text style={{ marginBottom: 20 }}>
+      <Text style={[s.subtitle, s.subtitleMedium]}>
         This is your chance to describe who you are, your experiences,
         or anything that helps people get to know you better.
       </Text>
@@ -32,31 +32,31 @@ export default function AboutStep() {
         placeholder="Tell others a little about yourself"
         multiline
         numberOfLines={4}
-        style={[globalStyles.field, { height: 120, textAlignVertical: "top" }]}
+        style={[s.input, s.textarea]}
         blurOnSubmit={true}       
         onSubmitEditing={() => Keyboard.dismiss()}
         returnKeyType="done"     
       />
 
       {/* Character Counter */}
-      <Text style={{ marginTop: 5 }}>
+      <Text style={s.characterCounter}>
         {data.bio.length}/300 characters
       </Text>
 
       {/* Validation Feedback */}
       {data.bio.length > 0 && data.bio.trim().length < 10 && (
-        <Text style={{ color: "red", marginTop: 5 }}>
+        <Text style={s.errorTextSmall}>
           Bio must be at least 10 characters
         </Text>
       )}
 
       {data.bio.length > 300 && (
-        <Text style={{ color: "red", marginTop: 5 }}>
+        <Text style={s.errorTextSmall}>
           Bio must be under 300 characters
         </Text>
       )}
 
-      <Text style={{ marginTop: 15 }}>
+      <Text style={s.infoText}>
         About Me visibility can be toggled in settings later.
       </Text>
     </View>

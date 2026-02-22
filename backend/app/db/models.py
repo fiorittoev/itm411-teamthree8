@@ -3,6 +3,7 @@ from sqlalchemy import (
     String,
     Text,
     TIMESTAMP,
+    DateTime,
     ForeignKey,
     Table,
     Enum,
@@ -12,6 +13,7 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from app.db.base import Base
+from datetime import datetime
 import uuid
 import enum
 
@@ -151,17 +153,12 @@ class ItemCategory(enum.Enum):
 
 class Item(Base):
     __tablename__ = "items"
-
-    id = Column(
-        UUID(as_uuid=True),
-        primary_key=True,
-        default=uuid.uuid4,
-        server_default=text("gen_random_uuid()"),
-    )
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     owner_id = Column(UUID(as_uuid=True), ForeignKey("profiles.id"), nullable=False)
     name = Column(String, nullable=False)
+    price = Column(String)
     description = Column(Text)
+    image = Column(Text)
     category = Column(Enum(ItemCategory), default=ItemCategory.OTHER)
-    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
-
+    created_at = Column(DateTime, default=datetime.utcnow)
     owner = relationship("Profile", back_populates="items")

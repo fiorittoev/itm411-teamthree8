@@ -1,6 +1,6 @@
 import { View, Text, TextInput, ActivityIndicator } from "react-native"
 import { useEffect, useState } from "react"
-import { globalStyles } from "../styles/globalStyles"
+import { registerStyles as s, COLORS } from "../styles/register/registerStyles"
 import { useRegister } from "../context/RegisterContext"
 import { supabase } from "../../services/supabase"
 
@@ -49,14 +49,14 @@ export default function NameStep() {
   }
 
   return (
-    <View style={{ padding: 20 }}>
-      <Text style={{ fontSize: 22, marginBottom: 10 }}>Choose a Display Name</Text>
-      <Text style={{ marginBottom: 20 }}>
+    <View style={s.paddingContainer}>
+      <Text style={s.titleLarge}>Choose a Display Name</Text>
+      <Text style={[s.subtitle, s.subtitleMedium]}>
         It can be your real name, a nickname, or a username.
         This is how others will recognize you in the app.
       </Text>
 
-      <View style={{ position: "relative" }}>
+      <View style={s.inputContainer}>
         <TextInput
           value={data.name}
           onChangeText={handleChange}
@@ -64,34 +64,34 @@ export default function NameStep() {
           autoCapitalize="none"
           placeholder="Enter your display name"
           style={[
-            globalStyles.field,
-            taken && { borderColor: "#e53935" },
-            !taken && formatValid && !checking && { borderColor: "#2e7d32" },
+            s.input,
+            taken && s.inputError,
+            !taken && formatValid && !checking && s.inputSuccess,
           ]}
         />
         {checking && (
           <ActivityIndicator
             size="small"
-            color="#1976d2"
-            style={{ position: "absolute", right: 12, top: 12 }}
+            color={COLORS.blue}
+            style={s.iconContainer}
           />
         )}
         {!checking && formatValid && !taken && (
-          <Text style={{ position: "absolute", right: 12, top: 10, color: "#2e7d32", fontSize: 18 }}>✓</Text>
+          <Text style={s.checkIcon}>✓</Text>
         )}
       </View>
 
       {tooShort && (
-        <Text style={{ color: "#e53935", marginTop: 5 }}>Name must be at least 3 characters</Text>
+        <Text style={s.errorTextSmall}>Name must be at least 3 characters</Text>
       )}
       {tooLong && (
-        <Text style={{ color: "#e53935", marginTop: 5 }}>Name must be under 20 characters</Text>
+        <Text style={s.errorTextSmall}>Name must be under 20 characters</Text>
       )}
       {taken && (
-        <Text style={{ color: "#e53935", marginTop: 5 }}>That name is already taken — try another</Text>
+        <Text style={s.errorTextSmall}>That name is already taken — try another</Text>
       )}
       {!taken && formatValid && !checking && (
-        <Text style={{ color: "#2e7d32", marginTop: 5 }}>Name is available</Text>
+        <Text style={s.successTextSmall}>Name is available</Text>
       )}
     </View>
   )

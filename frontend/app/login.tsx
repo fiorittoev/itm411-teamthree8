@@ -7,7 +7,7 @@ import {
 } from "react-native"
 import { useEffect, useState } from "react"
 import { useRouter } from "expo-router"
-import { globalStyles } from "./styles/globalStyles"
+import { authStyles as s } from "./styles/auth/authStyles"
 import { supabase } from "../services/supabase"
 
 export default function LoginScreen() {
@@ -42,7 +42,7 @@ export default function LoginScreen() {
         return
       }
 
-      router.replace("/(tabs)/home")
+      router.replace("/main")
     } catch (err: any) {
       setMessage(err?.message ?? "Unexpected error")
     } finally {
@@ -51,13 +51,13 @@ export default function LoginScreen() {
   }
 
   return (
-    <View style={{ padding: 20 }}>
-      <Text style={{ fontSize: 22, marginBottom: 10 }}>Login</Text>
-      <Text style={{ marginBottom: 20 }}>
+    <View style={s.container}>
+      <Text style={s.title}>Login</Text>
+      <Text style={s.subtitle}>
         Welcome back! Sign in to continue.
       </Text>
 
-      <Text>Email</Text>
+      <Text style={s.label}>Email</Text>
       <TextInput
         value={email}
         onChangeText={setEmail}
@@ -65,50 +65,50 @@ export default function LoginScreen() {
         autoCapitalize="none"
         autoComplete="email"
         placeholder="you@example.com"
-        style={globalStyles.field}
+        style={s.field}
       />
 
-      <Text>Password</Text>
+      <Text style={s.label}>Password</Text>
       <TextInput
         value={password}
         onChangeText={setPassword}
         secureTextEntry
         placeholder="Password"
-        style={globalStyles.field}
+        style={s.field}
       />
 
       {email && !/\S+@\S+\.\S+/.test(email) && (
-        <Text style={{ color: "red", marginTop: 5 }}>
+        <Text style={s.errorText}>
           Enter a valid email address
         </Text>
       )}
 
       {loading ? (
-        <ActivityIndicator style={{ marginTop: 20 }} />
+        <ActivityIndicator style={s.loadingContainer} />
       ) : (
         <TouchableOpacity
           style={[
-            globalStyles.button,
-            { opacity: isValid ? 1 : 0.5 },
+            s.button,
+            !isValid && s.buttonDisabled,
           ]}
           onPress={handleLogin}
           disabled={!isValid}
         >
-          <Text style={globalStyles.buttonText}>Login</Text>
+          <Text style={s.buttonText}>Login</Text>
         </TouchableOpacity>
       )}
 
       {message && (
-        <Text style={{ marginTop: 10, color: "red" }}>
+        <Text style={s.messageText}>
           {message}
         </Text>
       )}
 
       <TouchableOpacity
         onPress={() => router.push("/register")}
-        style={{ marginTop: 20 }}
+        style={s.linkContainer}
       >
-        <Text style={{ textAlign: "center" }}>
+        <Text style={s.linkText}>
           Dont have an account? Register
         </Text>
       </TouchableOpacity>

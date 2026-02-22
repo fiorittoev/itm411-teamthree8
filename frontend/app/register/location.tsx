@@ -1,6 +1,6 @@
 import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator } from "react-native"
 import { useEffect, useState, useRef } from "react"
-import { globalStyles } from "../styles/globalStyles"
+import { registerStyles as s, COLORS } from "../styles/register/registerStyles"
 import { useRegister } from "../context/RegisterContext"
 import { supabase } from "../../services/supabase"
 
@@ -175,43 +175,32 @@ export default function LocationStep() {
     updateField("communityId", lake.id ?? undefined)
   }
 
-  const labelStyle = { fontSize: 13, color: "#555", marginBottom: 3 }
-  const fieldStyle = [globalStyles.field, { marginBottom: 10 }]
-
   return (
-    <ScrollView style={{ padding: 20 }} keyboardShouldPersistTaps="handled">
-      <Text style={{ fontSize: 20, fontWeight: "600", marginBottom: 16 }}>Your Address</Text>
+    <ScrollView style={s.scrollContainer} keyboardShouldPersistTaps="handled">
+      <Text style={s.titleMedium}>Your Address</Text>
 
       {/* Autocomplete Input */}
-      <Text style={labelStyle}>Search your address *</Text>
-      <View style={{ position: "relative", zIndex: 10 }}>
+      <Text style={s.labelSmall}>Search your address *</Text>
+      <View style={s.autocompleteContainer}>
         <TextInput
           value={inputText}
           onChangeText={handleInputChange}
           placeholder="Start typing your address..."
-          style={[fieldStyle, { marginBottom: 0 }]}
+          style={[s.input, { marginBottom: 0 }]}
         />
 
         {suggestions.length > 0 && (
-          <View style={{
-            position: "absolute", top: "100%", left: 0, right: 0,
-            backgroundColor: "white", borderRadius: 8, zIndex: 20,
-            borderWidth: 1, borderColor: "#e0e0e0",
-            shadowColor: "#000", shadowOpacity: 0.1,
-            shadowRadius: 8, shadowOffset: { width: 0, height: 4 },
-            elevation: 5,
-          }}>
+          <View style={s.suggestionsContainer}>
             {suggestions.map((s, i) => (
               <TouchableOpacity
                 key={s.place_id}
                 onPress={() => selectSuggestion(s)}
-                style={{
-                  padding: 12,
-                  borderBottomWidth: i < suggestions.length - 1 ? 1 : 0,
-                  borderBottomColor: "#f0f0f0",
-                }}
+                style={[
+                  s.suggestionItem,
+                  i < suggestions.length - 1 && s.suggestionItemBorder,
+                ]}
               >
-                <Text style={{ fontSize: 14, color: "#333" }}>{s.description}</Text>
+                <Text style={s.suggestionText}>{s.description}</Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -219,34 +208,34 @@ export default function LocationStep() {
       </View>
 
       {/* Apt field */}
-      <Text style={[labelStyle, { marginTop: 10 }]}>Apt, Suite, Unit (optional)</Text>
+      <Text style={[s.labelSmall, { marginTop: 10 }]}>Apt, Suite, Unit (optional)</Text>
       <TextInput
         value={address.apt}
         onChangeText={(v) => setAddress((prev) => ({ ...prev, apt: v }))}
         placeholder="Apt 4B"
-        style={fieldStyle}
+        style={[s.input, s.inputWithMargin]}
       />
 
       {/* Confirmed address preview */}
       {addressConfirmed && (
-        <View style={{
-          marginTop: 4, marginBottom: 20, padding: 14,
-          backgroundColor: addressTaken ? "#fff3e0" : "#f8f9fa",
-          borderRadius: 10,
-          borderLeftWidth: 4,
-          borderLeftColor: addressTaken ? "#e65100" : checkingAddress ? "#bbb" : "#1976d2",
-        }}>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 4 }}>
+        <View style={[
+          s.addressPreview,
+          addressTaken ? s.addressPreviewWarning : checkingAddress ? s.addressPreviewChecking : s.addressPreviewNormal,
+        ]}>
+          <View style={s.addressStatusRow}>
             {checkingAddress
-              ? <ActivityIndicator size="small" color="#999" />
-              : <Text style={{ fontSize: 12, color: addressTaken ? "#e65100" : "#999" }}>
+              ? <ActivityIndicator size="small" color={COLORS.gray} />
+              : <Text style={[
+                  s.addressStatusText,
+                  addressTaken && s.addressStatusTextWarning,
+                ]}>
                   {addressTaken ? "⚠ Address already registered" : "Address on file"}
                 </Text>
             }
           </View>
-          <Text style={{ fontSize: 15, color: "#222", fontWeight: "500" }}>{fullAddress}</Text>
+          <Text style={s.addressText}>{fullAddress}</Text>
           {addressTaken && (
-            <Text style={{ fontSize: 12, color: "#bf360c", marginTop: 4 }}>
+            <Text style={s.addressWarningText}>
               An account is already associated with this address. If this is you, try signing in instead.
             </Text>
           )}
@@ -260,54 +249,60 @@ export default function LocationStep() {
             updateField("community", "")
             updateField("communityId", undefined)
           }}>
-            <Text style={{ color: "#1976d2", fontSize: 13, marginTop: 6 }}>Change address</Text>
+            <Text style={s.linkButton}>Change address</Text>
           </TouchableOpacity>
         </View>
       )}
 
       {/* Community Selector Block */}
-      <View style={{
-        borderRadius: 12, borderWidth: 1.5, overflow: "hidden",
-        borderColor: !addressConfirmed ? "#e0e0e0"
-          : searched && lakeOptions.length === 0 ? "#e65100"
-          : "#1976d2",
-      }}>
-        <View style={{
-          padding: 14,
-          backgroundColor: !addressConfirmed ? "#f5f5f5" : "#e3f2fd",
-        }}>
-          <Text style={{ fontSize: 15, fontWeight: "600", color: !addressConfirmed ? "#aaa" : "#1976d2" }}>
+      <View style={[
+        s.communitySelector,
+        !addressConfirmed ? s.communitySelectorDisabled
+          : searched && lakeOptions.length === 0 ? s.communitySelectorWarning
+          : s.communitySelectorActive,
+      ]}>
+        <View style={[
+          s.communityHeader,
+          !addressConfirmed ? s.communityHeaderDisabled : s.communityHeaderActive,
+        ]}>
+          <Text style={[
+            s.communityHeaderTitle,
+            !addressConfirmed ? s.communityHeaderTitleDisabled : s.communityHeaderTitleActive,
+          ]}>
             Select Your Lake Community
           </Text>
-          <Text style={{ fontSize: 12, marginTop: 2, color: !addressConfirmed ? "#bbb" : "#555" }}>
+          <Text style={[
+            s.communityHeaderSubtitle,
+            !addressConfirmed ? s.communityHeaderSubtitleDisabled : s.communityHeaderSubtitleActive,
+          ]}>
             {!addressConfirmed
               ? "Select an address above to see nearby lakes"
               : "Choose the lake community closest to your home"}
           </Text>
         </View>
 
-        <View style={{ padding: 14 }}>
+        <View style={s.communityContent}>
           {!addressConfirmed && (
-            <View style={{ alignItems: "center", paddingVertical: 20 }}>
-              <Text style={{ color: "#bbb", fontSize: 14, textAlign: "center" }}>
+            <View style={s.communityEmptyState}>
+              <Text style={s.communityEmptyText}>
                 Search and select your address to find nearby lakes
               </Text>
             </View>
           )}
 
           {addressConfirmed && loading && (
-            <View style={{ alignItems: "center", paddingVertical: 20 }}>
-              <ActivityIndicator color="#1976d2" />
-              <Text style={{ color: "#999", fontSize: 13, marginTop: 8 }}>Finding nearby lakes...</Text>
+            <View style={s.communityLoadingState}>
+              <ActivityIndicator color={COLORS.blue} />
+              <Text style={s.communityLoadingText}>Finding nearby lakes...</Text>
             </View>
           )}
 
           {!loading && searched && lakeOptions.length === 0 && (
-            <View style={{ alignItems: "center", paddingVertical: 16 }}>
-              <Text style={{ color: "#e65100", fontWeight: "600", marginBottom: 4, textAlign: "center" }}>
+            <View style={s.communityErrorState}>
+              <Text style={s.communityErrorTitle}>
                 No lakes found near this address
               </Text>
-              <Text style={{ color: "#bf360c", fontSize: 13, textAlign: "center" }}>
+              <Text style={s.communityErrorText}>
                 Double-check your address or try a nearby ZIP code.
               </Text>
             </View>
@@ -317,33 +312,29 @@ export default function LocationStep() {
             <TouchableOpacity
               key={lake.name}
               onPress={() => selectCommunity(lake)}
-              style={{
-                padding: 12, marginVertical: 4, borderRadius: 8,
-                backgroundColor: lake.name === data.community ? "#1976d2" : "#f5f5f5",
-                borderWidth: 1.5,
-                borderColor: lake.name === data.community ? "#1976d2" : "#e0e0e0",
-                flexDirection: "row", justifyContent: "space-between", alignItems: "center",
-              }}
+              style={[
+                s.communityOption,
+                lake.name === data.community ? s.communityOptionSelected : s.communityOptionUnselected,
+              ]}
             >
               <View>
-                <Text style={{
-                  fontSize: 15,
-                  color: lake.name === data.community ? "white" : "#333",
-                  fontWeight: lake.name === data.community ? "600" : "400",
-                }}>
+                <Text style={[
+                  s.communityOptionText,
+                  lake.name === data.community && s.communityOptionTextSelected,
+                ]}>
                   {lake.name}
                 </Text>
-                <Text style={{
-                  fontSize: 11, marginTop: 1,
-                  color: lake.name === data.community ? "rgba(255,255,255,0.7)" : "#aaa",
-                  fontStyle: lake.id ? "normal" : "italic",
-                }}>
+                <Text style={[
+                  s.communityOptionSubtext,
+                  lake.name === data.community ? s.communityOptionSubtextSelected : s.communityOptionSubtext,
+                  !lake.id && s.communityOptionSubtextNew,
+                ]}>
                   {lake.id ? "Existing community" : "New — will be created"}
                 </Text>
               </View>
               {lake.name === data.community
-                ? <Text style={{ color: "white", fontSize: 16 }}>✓</Text>
-                : !lake.id && <Text style={{ fontSize: 11, color: "#1976d2" }}>+ New</Text>
+                ? <Text style={s.communityOptionCheck}>✓</Text>
+                : !lake.id && <Text style={s.communityOptionSubtextNew}>+ New</Text>
               }
             </TouchableOpacity>
           ))}

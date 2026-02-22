@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity, FlatList } from "react-native"
 import { useEffect, useState } from "react"
-import { globalStyles } from "../styles/globalStyles"
+import { registerStyles as s } from "../styles/register/registerStyles"
 import { useRegister } from "../context/RegisterContext"
 
 // Example interest options
@@ -35,12 +35,12 @@ export default function InterestStep() {
   }
 
   return (
-    <View style={{ padding: 20 }}>
-      <Text style={{ fontSize: 20, marginBottom: 10 }}>
+    <View style={s.paddingContainer}>
+      <Text style={s.titleMedium}>
         Choose the interests and hobbies that most interest you
       </Text>
 
-      <Text style={{ marginBottom: 20 }}>Select as many as you would like</Text>
+      <Text style={[s.subtitle, s.subtitleMedium]}>Select as many as you would like</Text>
 
       <FlatList
         data={ALL_INTERESTS}
@@ -50,26 +50,23 @@ export default function InterestStep() {
         renderItem={({ item }) => (
           <TouchableOpacity
             onPress={() => toggleInterest(item)}
-            style={{
-              paddingVertical: 10,
-              paddingHorizontal: 15,
-              borderRadius: 20,
-              backgroundColor: selected.includes(item) ? "green" : "#ddd",
-              marginBottom: 5,
-            }}
+            style={[
+              s.interestChip,
+              selected.includes(item) ? s.interestChipSelected : s.interestChipUnselected,
+            ]}
           >
-            <Text style={{ color: selected.includes(item) ? "white" : "black" }}>
+            <Text style={selected.includes(item) ? s.interestChipTextSelected : s.interestChipText}>
               {item}
             </Text>
           </TouchableOpacity>
         )}
       />
 
-      <Text style={{ marginTop: 20 }}>
+      <Text style={s.infoText}>
         Interests can be added and removed in settings
       </Text>
 
-      <Text>Interests visibility can be turned on or off in settings</Text>
+      <Text style={s.infoTextSmall}>Interests visibility can be turned on or off in settings</Text>
     </View>
   )
 }

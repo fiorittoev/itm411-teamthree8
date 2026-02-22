@@ -1,15 +1,16 @@
 import { View, Text, TextInput, TouchableOpacity } from "react-native"
 import { useRegister } from "../context/RegisterContext"
 import { useState } from "react"
-import { RegisterData } from "../context/RegisterContext" // export this from your context
+import { RegisterData } from "../context/RegisterContext"
+import { registerStyles as s, COLORS } from "../styles/register/registerStyles"
 
 export default function ReviewStep() {
   const { data, updateField } = useRegister()
   const [editing, setEditing] = useState<keyof RegisterData | null>(null)
 
   return (
-    <View style={{ padding: 20, gap: 12 }}>
-      <Text style={{ fontSize: 16, color: "#555", marginBottom: 8 }}>
+    <View style={s.reviewContainer}>
+      <Text style={s.headerText}>
         Review and edit your profile before finishing
       </Text>
 
@@ -20,17 +21,12 @@ export default function ReviewStep() {
       <EditableRow label="Bio" field="bio" value={data.bio} editing={editing} setEditing={setEditing} updateField={updateField} multiline />
 
       {data.interests?.length > 0 && (
-        <View>
-          <Text style={{ fontWeight: "600", marginBottom: 4 }}>Interests</Text>
-          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
+        <View style={s.reviewSection}>
+          <Text style={s.reviewSectionTitle}>Interests</Text>
+          <View style={s.reviewChipsContainer}>
             {data.interests.map((i: string) => (
-              <View key={i} style={{
-                backgroundColor: "#e8f5e9",
-                borderRadius: 12,
-                paddingHorizontal: 10,
-                paddingVertical: 4,
-              }}>
-                <Text style={{ color: "#2e7d32" }}>{i}</Text>
+              <View key={i} style={s.reviewChip}>
+                <Text style={s.reviewChipText}>{i}</Text>
               </View>
             ))}
           </View>
@@ -38,24 +34,20 @@ export default function ReviewStep() {
       )}
 
         {(data.items ?? []).length > 0 && (
-    <View>
-      <Text style={{ fontWeight: "600", marginBottom: 6 }}>Items</Text>
+    <View style={s.reviewSection}>
+      <Text style={[s.reviewSectionTitle, { marginBottom: 6 }]}>Items</Text>
       {data.items.map((item, i) => (
-        <View key={i} style={{
-          backgroundColor: "#f5f5f5", borderRadius: 8,
-          padding: 10, marginBottom: 6,
-        }}>
-          <Text style={{ fontWeight: "500" }}>{item.name}
-            <Text style={{ fontWeight: "400", color: "#888" }}> · {item.category}</Text>
+        <View key={i} style={s.reviewItemCard}>
+          <Text style={s.reviewItemName}>{item.name}
+            <Text style={{ fontWeight: "400", color: COLORS.gray }}> · {item.category}</Text>
           </Text>
           {!!item.description && (
-            <Text style={{ color: "#666", fontSize: 13 }}>{item.description}</Text>
+            <Text style={s.reviewItemDescription}>{item.description}</Text>
           )}
         </View>
       ))}
     </View>
   )}
-
     </View>
   )
 }
@@ -80,11 +72,11 @@ function EditableRow<K extends keyof RegisterData>({
   const isEditing = editing === field
 
   return (
-    <View style={{ borderBottomWidth: 1, borderBottomColor: "#eee", paddingBottom: 10 }}>
-      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-        <Text style={{ fontSize: 12, color: "#999" }}>{label}</Text>
+    <View style={s.reviewRow}>
+      <View style={s.reviewRowHeader}>
+        <Text style={s.reviewRowLabel}>{label}</Text>
         <TouchableOpacity onPress={() => setEditing(isEditing ? null : field)}>
-          <Text style={{ fontSize: 13, color: isEditing ? "#e53935" : "#1976d2" }}>
+          <Text style={isEditing ? s.editButtonActive : s.editButton}>
             {isEditing ? "✕ Cancel" : "✏️ Edit"}
           </Text>
         </TouchableOpacity>
@@ -96,20 +88,14 @@ function EditableRow<K extends keyof RegisterData>({
           onChangeText={(v) => updateField(field, v as RegisterData[K])}
           autoFocus
           multiline={multiline}
-          style={{
-            borderWidth: 1,
-            borderColor: "#1976d2",
-            borderRadius: 6,
-            padding: 8,
-            marginTop: 6,
-            fontSize: 15,
-            minHeight: multiline ? 80 : undefined,
-            textAlignVertical: multiline ? "top" : undefined,
-          }}
+          style={[
+            s.reviewEditInput,
+            multiline && s.reviewEditInputMultiline,
+          ]}
           onSubmitEditing={() => setEditing(null)}
         />
       ) : (
-        <Text style={{ fontSize: 15, marginTop: 2 }}>{value || "—"}</Text>
+        <Text style={s.reviewRowValue}>{value || "—"}</Text>
       )}
     </View>
   )

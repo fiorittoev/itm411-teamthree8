@@ -1,4 +1,4 @@
-/*import { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { View } from 'react-native';
 import { supabase } from '../services/supabase';
@@ -12,7 +12,7 @@ export default function RootIndex() {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
-          router.replace('/(tabs)/home');
+          router.replace('/main');
         } 
         else {
           router.replace('/options');
@@ -26,10 +26,5 @@ export default function RootIndex() {
     checkSession();
   },[router]);
   return <View style={{ flex: 1 }} />;
-}*/
-import { Redirect } from "expo-router";
-
-export default function Index() {
-  return <Redirect href="/(tabs)/home" />;
 }
 
