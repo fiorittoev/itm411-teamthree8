@@ -5,7 +5,9 @@ class Settings(BaseSettings):
     DATABASE_URL: str
     SUPABASE_URL: str
     SUPABASE_ANON_KEY: str
+    GOOGLE_MAPS_API_KEY: str
     SUPABASE_SERVICE_ROLE_KEY: str
+    SUPABASE_JWT_SECRET: str
     SECRET_KEY: str
     DEBUG: bool = False
     PORT: int = 8000

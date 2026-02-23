@@ -7,22 +7,24 @@ export default function RootIndex() {
   const router = useRouter();
 
   useEffect(() => {
+    // Check for authentication and redirect accordingly
     const checkSession = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
-          router.replace('/(tabs)/home');
+          router.replace('/main');
         } 
         else {
-          router.replace('/auth');
+          router.replace('/options');
         }
       } 
       catch (err) {
         console.error('Error checking session:', err);
-        router.replace('/auth');
+        router.replace('/options');
       }
     };
     checkSession();
   },[router]);
   return <View style={{ flex: 1 }} />;
 }
+

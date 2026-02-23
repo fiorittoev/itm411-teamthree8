@@ -59,6 +59,14 @@ Install the following software in this order:
   docker --version
   docker compose --version
   ```
+ — Enable IPv6 in Docker
+
+Edit /etc/docker/daemon.json (or create it if missing):
+
+{
+  "ipv6": true,
+  "fixed-cidr-v6": "2001:db8:1::/64"
+}
 
 #### 6. **PostgreSQL (Optional - only if running locally without Docker)**
 - Download from: https://www.postgresql.org/download/windows/
@@ -178,7 +186,8 @@ backend/
 ├── Dockerfile                  # Docker configuration for backend
 └── .env                        # Environment variables (DO NOT commit)
 ```
-
+run
+expo install expo-location
 **Key Files:**
 - `main.py` - Define your API routes here
 - `config.py` - Store database URLs, API keys, and other settings
