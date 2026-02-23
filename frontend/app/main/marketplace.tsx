@@ -18,7 +18,6 @@ import { supabase } from '../../services/supabase';
 import { mainStyles as s } from '../styles/main/mainStyles';
 
 const { width } = Dimensions.get('window');
-const CARD_W = (width - 40 - 24) / 4;
 
 type Filter = 'all' | 'yours' | 'favorites';
 
@@ -36,8 +35,10 @@ function MarketCard({ item, isFav, onPress, onToggleFav }: {
           <Text style={s.cardName} numberOfLines={2}>{item.name}</Text>
           <Text style={s.cardPrice}>${item.price}</Text>
         </View>
-        <TouchableOpacity onPress={e => { e.stopPropagation?.(); onToggleFav(); }}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+        <TouchableOpacity
+          onPress={e => { e.stopPropagation?.(); onToggleFav(); }}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
           <Text style={s.cardFav}>{isFav ? '♥' : '♡'}</Text>
         </TouchableOpacity>
       </View>
@@ -51,40 +52,46 @@ export default function MarketplaceScreen() {
   const router = useRouter();
   const { openItemId } = useLocalSearchParams<{ openItemId?: string }>();
 
-  const [items, setItems] = useState<ItemOut[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [items, setItems]         = useState<ItemOut[]>([]);
+  const [loading, setLoading]     = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   const [currentAuthorId, setCurrentAuthorId] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<string[]>([]);
-  const [filter, setFilter] = useState<Filter>('all');
+  const [filter, setFilter]       = useState<Filter>('all');
 
   // Add modal
-  const [addVisible, setAddVisible] = useState(false);
-  const [itemName, setItemName] = useState('');
-  const [itemPrice, setItemPrice] = useState('');
-  const [itemDesc, setItemDesc] = useState('');
-  const [itemImage, setItemImage] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+  const [addVisible, setAddVisible]   = useState(false);
+  const [itemName, setItemName]       = useState('');
+  const [itemPrice, setItemPrice]     = useState('');
+  const [itemDesc, setItemDesc]       = useState('');
+  const [itemImage, setItemImage]     = useState<string | null>(null);
+  const [submitting, setSubmitting]   = useState(false);
+
+  // Field-level validation errors
+  const [errors, setErrors] = useState<{
+    name?: string;
+    price?: string;
+    desc?: string;
+    image?: string;
+  }>({});
 
   // Detail modal
   const [detailItem, setDetailItem] = useState<ItemOut | null>(null);
 
   // Delete modal
-  const [deleteVisible, setDeleteVisible] = useState(false);
-  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
-  const [deleting, setDeleting] = useState(false);
+  const [deleteVisible, setDeleteVisible]     = useState(false);
+  const [deleteTargetId, setDeleteTargetId]   = useState<string | null>(null);
+  const [deleting, setDeleting]               = useState(false);
 
-  // ── Load ─────────────────────────────────────────────────────────────────────
+  // ── Load ──────────────────────────────────────────────────────────────────
 
   useEffect(() => { fetchItems(); }, []);
 
-  // Auto-open item passed from home screen
   useEffect(() => {
     if (openItemId && items.length > 0) {
       const found = items.find(i => i.id === openItemId);
-      if (found) 
-        setDetailItem(found);
+      if (found) setDetailItem(found);
     }
   }, [openItemId, items]);
 
@@ -92,16 +99,11 @@ export default function MarketplaceScreen() {
     try {
       const fetched = await api.get<ItemOut[]>('/items');
       setItems(fetched);
-
-      // Resolve current user's author_id
       const { data } = await supabase.auth.getUser();
-      if (data.user) 
-        setCurrentAuthorId(data.user.id);
-    } 
-    catch (e: any) {
+      if (data.user) setCurrentAuthorId(data.user.id);
+    } catch (e: any) {
       Alert.alert('Error', e.message ?? 'Failed to load items');
-    } 
-    finally {
+    } finally {
       setLoading(false);
       setRefreshing(false);
     }
@@ -109,7 +111,7 @@ export default function MarketplaceScreen() {
 
   const onRefresh = useCallback(() => { setRefreshing(true); fetchItems(); }, []);
 
-  // ── Image picker ──────────────────────────────────────────────────────────────
+  // ── Image picker ──────────────────────────────────────────────────────────
 
   async function pickImage() {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -124,44 +126,60 @@ export default function MarketplaceScreen() {
       setItemImage(asset.base64
         ? `data:image/jpeg;base64,${asset.base64}`
         : asset.uri);
+      // clear image error once picked
+      setErrors(prev => ({ ...prev, image: undefined }));
     }
   }
 
-  // ── Submit listing ────────────────────────────────────────────────────────────
+  // ── Validation ────────────────────────────────────────────────────────────
+
+  function validate(): boolean {
+    const newErrors: typeof errors = {};
+    if (!itemName.trim())  newErrors.name  = 'Item name is required';
+    if (!itemPrice.trim()) newErrors.price = 'Price is required';
+    else if (isNaN(Number(itemPrice))) newErrors.price = 'Price must be a number';
+    if (!itemDesc.trim())  newErrors.desc  = 'Description is required';
+    if (!itemImage)        newErrors.image = 'Please select a photo';
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  }
+
+  // ── Submit listing ────────────────────────────────────────────────────────
 
   async function submitItem() {
-    if (!itemName.trim() || !itemPrice.trim() || !itemDesc.trim() || !itemImage) {
-      Alert.alert('Missing fields', 'Please fill in all fields and pick a photo.');
-      return;
-    }
+    if (!validate()) return;   // inline errors shown, no Alert needed
+
     setSubmitting(true);
     try {
       const newItem = await api.post<ItemOut>('/items', {
-        name: itemName.trim(),
-        price: itemPrice.trim(),
+        name:        itemName.trim(),
+        price:       itemPrice.trim(),
         description: itemDesc.trim(),
-        category: 'other',
-        image: itemImage,
+        category:    'other',
+        image:       itemImage,
       });
       setItems(prev => [newItem, ...prev]);
-      if (!currentAuthorId) 
-        setCurrentAuthorId(newItem.owner_id);
+      if (!currentAuthorId) setCurrentAuthorId(newItem.owner_id);
       resetForm();
       setAddVisible(false);
-    } 
-    catch (e: any) {
-      Alert.alert('Error', e.message ?? 'Failed to post listing');
-    } 
-    finally {
+    } catch (e: any) {
+      // Surface the actual server error so it's visible
+      const msg = e.message ?? 'Failed to post listing';
+      Alert.alert('Error posting listing', msg);
+    } finally {
       setSubmitting(false);
     }
   }
 
   function resetForm() {
-    setItemName(''); setItemPrice(''); setItemDesc(''); setItemImage(null);
+    setItemName('');
+    setItemPrice('');
+    setItemDesc('');
+    setItemImage(null);
+    setErrors({});
   }
 
-  // ── Favorites (in-memory) ─────────────────────────────────────────────────────
+  // ── Favorites ─────────────────────────────────────────────────────────────
 
   function toggleFav(id: string) {
     setFavorites(prev =>
@@ -169,7 +187,7 @@ export default function MarketplaceScreen() {
     );
   }
 
-  // ── Delete ────────────────────────────────────────────────────────────────────
+  // ── Delete ────────────────────────────────────────────────────────────────
 
   function promptDelete(id: string) {
     setDeleteTargetId(id);
@@ -177,35 +195,30 @@ export default function MarketplaceScreen() {
   }
 
   async function confirmDelete() {
-    if (!deleteTargetId) 
-      return;
+    if (!deleteTargetId) return;
     setDeleting(true);
     try {
       await api.delete(`/items/${deleteTargetId}`);
       setItems(prev => prev.filter(i => i.id !== deleteTargetId));
       setDetailItem(null);
       setDeleteVisible(false);
-    } 
-    catch (e: any) {
+    } catch (e: any) {
       Alert.alert('Error', e.message ?? 'Failed to delete');
-    } 
-    finally {
+    } finally {
       setDeleting(false);
       setDeleteTargetId(null);
     }
   }
 
-  // ── Filtered list ─────────────────────────────────────────────────────────────
+  // ── Filtered list ─────────────────────────────────────────────────────────
 
   const displayed = items.filter(item => {
-    if (filter === 'favorites')
-       return favorites.includes(item.id);
-    if (filter === 'yours')
-       return item.owner_id === currentAuthorId;
+    if (filter === 'favorites') return favorites.includes(item.id);
+    if (filter === 'yours')     return item.owner_id === currentAuthorId;
     return true;
   });
 
-  // ─── Render ──────────────────────────────────────────────────────────────────
+  // ── Render ────────────────────────────────────────────────────────────────
 
   if (loading) {
     return (
@@ -225,7 +238,9 @@ export default function MarketplaceScreen() {
           <TouchableOpacity onPress={() => router.push('/main')}>
             <Ionicons name="home-outline" size={28} color="white" />
           </TouchableOpacity>
-          <TouchableOpacity><Ionicons name="cart" size={28} color="white" /></TouchableOpacity>
+          <TouchableOpacity>
+            <Ionicons name="cart" size={28} color="white" />
+          </TouchableOpacity>
           <TouchableOpacity onPress={() => router.push('/main/settings')}>
             <Ionicons name="settings-outline" size={28} color="white" />
           </TouchableOpacity>
@@ -239,8 +254,6 @@ export default function MarketplaceScreen() {
 
       {/* MARKETPLACE */}
       <View style={s.marketplace}>
-
-        {/* Header */}
         <View style={s.marketHeader}>
           <View style={s.headerLeft}>
             <Text style={s.marketTitle}>Marketplace</Text>
@@ -260,7 +273,6 @@ export default function MarketplaceScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Grid */}
         <FlatList
           data={displayed}
           keyExtractor={i => i.id}
@@ -269,9 +281,12 @@ export default function MarketplaceScreen() {
           columnWrapperStyle={s.gridRow}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
           renderItem={({ item }) => (
-            <MarketCard item={item} isFav={favorites.includes(item.id)}
+            <MarketCard
+              item={item}
+              isFav={favorites.includes(item.id)}
               onPress={() => setDetailItem(item)}
-              onToggleFav={() => toggleFav(item.id)} />
+              onToggleFav={() => toggleFav(item.id)}
+            />
           )}
           ListEmptyComponent={<Text style={s.emptyText}>No listings yet. Tap + to add one!</Text>}
         />
@@ -283,24 +298,71 @@ export default function MarketplaceScreen() {
           <ScrollView contentContainerStyle={s.overlayScroll}>
             <View style={s.modalBox}>
               <Text style={s.modalTitle}>Add New Listing</Text>
-              <TextInput style={s.input} placeholder="Item Name" value={itemName} onChangeText={setItemName} />
-              <TextInput style={s.input} placeholder="Price" value={itemPrice} onChangeText={setItemPrice} keyboardType="decimal-pad" />
-              <TextInput style={[s.input, s.textarea]} placeholder="Description" value={itemDesc}
-                onChangeText={setItemDesc} multiline numberOfLines={3} textAlignVertical="top" />
-              <TouchableOpacity style={s.imagePicker} onPress={pickImage}>
+
+              {/* Name */}
+              <TextInput
+                style={[s.input, errors.name ? { borderColor: '#e74c3c', borderWidth: 1 } : null]}
+                placeholder="Item Name"
+                value={itemName}
+                onChangeText={v => { setItemName(v); setErrors(prev => ({ ...prev, name: undefined })); }}
+              />
+              {errors.name ? <Text style={errStyle}>{errors.name}</Text> : null}
+
+              {/* Price */}
+              <TextInput
+                style={[s.input, errors.price ? { borderColor: '#e74c3c', borderWidth: 1 } : null]}
+                placeholder="Price"
+                value={itemPrice}
+                onChangeText={v => { setItemPrice(v); setErrors(prev => ({ ...prev, price: undefined })); }}
+                keyboardType="decimal-pad"
+              />
+              {errors.price ? <Text style={errStyle}>{errors.price}</Text> : null}
+
+              {/* Description */}
+              <TextInput
+                style={[s.input, s.textarea, errors.desc ? { borderColor: '#e74c3c', borderWidth: 1 } : null]}
+                placeholder="Description"
+                value={itemDesc}
+                onChangeText={v => { setItemDesc(v); setErrors(prev => ({ ...prev, desc: undefined })); }}
+                multiline
+                numberOfLines={3}
+                textAlignVertical="top"
+              />
+              {errors.desc ? <Text style={errStyle}>{errors.desc}</Text> : null}
+
+              {/* Image */}
+              <TouchableOpacity
+                style={[s.imagePicker, errors.image ? { borderColor: '#e74c3c', borderWidth: 1 } : null]}
+                onPress={pickImage}
+              >
                 {itemImage
                   ? <Image source={{ uri: itemImage }} style={s.imagePreview} />
                   : <View style={s.imagePlaceholder}>
-                      <Ionicons name="image-outline" size={32} color="#888" />
-                      <Text style={s.imagePlaceholderText}>Tap to select photo</Text>
-                    </View>}
+                      <Ionicons name="image-outline" size={32} color={errors.image ? '#e74c3c' : '#888'} />
+                      <Text style={[s.imagePlaceholderText, errors.image ? { color: '#e74c3c' } : null]}>
+                        Tap to select photo
+                      </Text>
+                    </View>
+                }
               </TouchableOpacity>
+              {errors.image ? <Text style={errStyle}>{errors.image}</Text> : null}
+
               <View style={s.modalActions}>
-                <TouchableOpacity style={[s.btn, s.btnCancel]} onPress={() => { resetForm(); setAddVisible(false); }}>
+                <TouchableOpacity
+                  style={[s.btn, s.btnCancel]}
+                  onPress={() => { resetForm(); setAddVisible(false); }}
+                >
                   <Text style={s.btnCancelText}>Cancel</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={[s.btn, s.btnBlue]} onPress={submitItem} disabled={submitting}>
-                  {submitting ? <ActivityIndicator color="white" /> : <Text style={s.btnText}>Post</Text>}
+                <TouchableOpacity
+                  style={[s.btn, s.btnBlue]}
+                  onPress={submitItem}
+                  disabled={submitting}
+                >
+                  {submitting
+                    ? <ActivityIndicator color="white" />
+                    : <Text style={s.btnText}>Post</Text>
+                  }
                 </TouchableOpacity>
               </View>
             </View>
@@ -312,31 +374,45 @@ export default function MarketplaceScreen() {
       <Modal visible={detailItem != null} transparent animationType="fade">
         <View style={s.overlay}>
           <View style={s.detailBox}>
-            {detailItem && <>
-              <Image source={{ uri: detailItem.image }} style={s.detailImg} />
-              <ScrollView style={s.detailInfo} contentContainerStyle={{ gap: 10 }} showsVerticalScrollIndicator={false}>
-                <Text style={s.detailName}>{detailItem.name}</Text>
-                <Text style={s.detailPrice}>${detailItem.price}</Text>
-                <Text style={s.detailSeller}>Posted by: {detailItem.owner_username}</Text>
-                <Text style={s.detailDesc}>{detailItem.description}</Text>
-                <TouchableOpacity style={s.favBtn} onPress={() => toggleFav(detailItem.id)}>
-                  <Text style={s.favBtnText}>{favorites.includes(detailItem.id) ? '♥ Favorited' : '♡ Favorite'}</Text>
-                </TouchableOpacity>
-                {detailItem.owner_id === currentAuthorId && (
-                  <TouchableOpacity style={[s.btn, s.btnRed]} onPress={() => promptDelete(detailItem.id)}>
-                    <Text style={s.btnText}>Delete Listing</Text>
+            {detailItem && (
+              <>
+                <Image source={{ uri: detailItem.image }} style={s.detailImg} />
+                <ScrollView
+                  style={s.detailInfo}
+                  contentContainerStyle={{ gap: 10 }}
+                  showsVerticalScrollIndicator={false}
+                >
+                  <Text style={s.detailName}>{detailItem.name}</Text>
+                  <Text style={s.detailPrice}>${detailItem.price}</Text>
+                  <Text style={s.detailSeller}>Posted by: {detailItem.owner_username}</Text>
+                  <Text style={s.detailDesc}>{detailItem.description}</Text>
+                  <TouchableOpacity style={s.favBtn} onPress={() => toggleFav(detailItem.id)}>
+                    <Text style={s.favBtnText}>
+                      {favorites.includes(detailItem.id) ? '♥ Favorited' : '♡ Favorite'}
+                    </Text>
                   </TouchableOpacity>
-                )}
-                <View style={s.contactBox}>
-                  <Text style={s.contactTitle}>Contact Info</Text>
-                  <Text style={s.contactText}>Email: Coming soon</Text>
-                  <Text style={s.contactText}>Phone: Coming soon</Text>
-                </View>
-                <TouchableOpacity style={[s.btn, s.btnCancel]} onPress={() => setDetailItem(null)}>
-                  <Text style={s.btnCancelText}>Close</Text>
-                </TouchableOpacity>
-              </ScrollView>
-            </>}
+                  {detailItem.owner_id === currentAuthorId && (
+                    <TouchableOpacity
+                      style={[s.btn, s.btnRed]}
+                      onPress={() => promptDelete(detailItem.id)}
+                    >
+                      <Text style={s.btnText}>Delete Listing</Text>
+                    </TouchableOpacity>
+                  )}
+                  <View style={s.contactBox}>
+                    <Text style={s.contactTitle}>Contact Info</Text>
+                    <Text style={s.contactText}>Email: Coming soon</Text>
+                    <Text style={s.contactText}>Phone: Coming soon</Text>
+                  </View>
+                  <TouchableOpacity
+                    style={[s.btn, s.btnCancel]}
+                    onPress={() => setDetailItem(null)}
+                  >
+                    <Text style={s.btnCancelText}>Close</Text>
+                  </TouchableOpacity>
+                </ScrollView>
+              </>
+            )}
           </View>
         </View>
       </Modal>
@@ -347,11 +423,21 @@ export default function MarketplaceScreen() {
           <View style={s.modalBox}>
             <Text style={s.modalTitle}>Delete this listing?</Text>
             <View style={s.modalActions}>
-              <TouchableOpacity style={[s.btn, s.btnCancel]} onPress={() => setDeleteVisible(false)}>
+              <TouchableOpacity
+                style={[s.btn, s.btnCancel]}
+                onPress={() => setDeleteVisible(false)}
+              >
                 <Text style={s.btnCancelText}>Cancel</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[s.btn, s.btnRed]} onPress={confirmDelete} disabled={deleting}>
-                {deleting ? <ActivityIndicator color="white" /> : <Text style={s.btnText}>Confirm</Text>}
+              <TouchableOpacity
+                style={[s.btn, s.btnRed]}
+                onPress={confirmDelete}
+                disabled={deleting}
+              >
+                {deleting
+                  ? <ActivityIndicator color="white" />
+                  : <Text style={s.btnText}>Confirm</Text>
+                }
               </TouchableOpacity>
             </View>
           </View>
@@ -361,3 +447,12 @@ export default function MarketplaceScreen() {
     </SafeAreaView>
   );
 }
+
+// ─── Shared inline error style ────────────────────────────────────────────────
+const errStyle = {
+  color: '#e74c3c',
+  fontSize: 12,
+  marginTop: -6,
+  marginBottom: 6,
+  marginLeft: 2,
+};

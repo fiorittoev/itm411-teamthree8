@@ -191,16 +191,16 @@ export default function LocationStep() {
 
         {suggestions.length > 0 && (
           <View style={s.suggestionsContainer}>
-            {suggestions.map((s, i) => (
+            {suggestions.map((suggestion, i) => (
               <TouchableOpacity
-                key={s.place_id}
-                onPress={() => selectSuggestion(s)}
+                key={suggestion.place_id}
+                onPress={() => selectSuggestion(suggestion)}
                 style={[
                   s.suggestionItem,
                   i < suggestions.length - 1 && s.suggestionItemBorder,
                 ]}
               >
-                <Text style={s.suggestionText}>{s.description}</Text>
+                <Text style={s.suggestionText}>{suggestion.description}</Text>
               </TouchableOpacity>
             ))}
           </View>

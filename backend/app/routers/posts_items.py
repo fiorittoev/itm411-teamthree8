@@ -170,7 +170,11 @@ def delete_post(
 
 
 @router.post("/items", response_model=ItemOut, status_code=status.HTTP_201_CREATED)
-def create_item(body, db, user):
+def create_item(
+    body: ItemCreate,  # ← typed schema, not bare `body`
+    db: Session = Depends(get_db),  # ← was missing Depends
+    user=Depends(get_current_user),  # ← was missing Depends
+):
     profile = get_or_create_profile(user, db)
     try:
         category_enum = ItemCategory[body.category.upper()]

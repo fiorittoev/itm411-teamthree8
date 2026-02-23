@@ -8,7 +8,7 @@ from app.db.base import Base
 from app.db.session import engine
 from sqlalchemy.orm import Session
 from app.db.session import get_db
-from app.db.models import Interest
+from app.db.models import Interest, Community, Item
 from app.routers.posts_items import router as posts_items_router
 from app.routers.posts_items import PostType, ItemCategory
 from pydantic import BaseModel
@@ -118,8 +118,23 @@ async def nearby_lakes(lat: float = Query(...), lng: float = Query(...)):
 def get_my_profile(user=Depends(get_current_user), db: Session = Depends(get_db)):
     profile = db.query(Profile).filter(Profile.id == user["sub"]).first()
     if not profile:
-        raise HTTPException(status_code=404, detail="Profile not found")
-    return profile
+        profile = Profile(
+            id=user["sub"],
+            email=user.get("email", ""),
+            username=user.get("email", "").split("@")[0],
+        )
+        db.add(profile)
+        db.commit()
+        db.refresh(profile)
+    return {
+        "id": str(profile.id),
+        "email": profile.email,
+        "username": profile.username,
+        "bio": profile.bio,
+        "address": profile.address,
+        "community": profile.communities[0].name if profile.communities else None,
+        "community_id": str(profile.communities[0].id) if profile.communities else None,
+    }
 
 
 @app.patch("/profile/me")
@@ -127,11 +142,39 @@ def update_my_profile(
     updates: dict, user=Depends(get_current_user), db: Session = Depends(get_db)
 ):
     profile = db.query(Profile).filter(Profile.id == user["sub"]).first()
+
+    # Handle community separately — it's a relationship, not a column
+    if "community" in updates:
+        community_name = updates.pop("community")
+        updates.pop("community_id", None)  # discard if frontend sent it
+        if community_name:
+            community = (
+                db.query(Community).filter(Community.name == community_name).first()
+            )
+            if not community:
+                community = Community(name=community_name, lake_name=community_name)
+                db.add(community)
+                db.flush()
+            profile.communities = [community]  # replace existing
+        else:
+            profile.communities = []
+
+    # Set remaining scalar fields
     for key, value in updates.items():
-        setattr(profile, key, value)
+        if hasattr(profile, key):
+            setattr(profile, key, value)
+
     db.commit()
     db.refresh(profile)
-    return profile
+    return {
+        "id": str(profile.id),
+        "email": profile.email,
+        "username": profile.username,
+        "bio": profile.bio,
+        "address": profile.address,
+        "community": profile.communities[0].name if profile.communities else None,
+        "community_id": str(profile.communities[0].id) if profile.communities else None,
+    }
 
 
 class RegisterRequest(BaseModel):
@@ -165,20 +208,27 @@ async def register(body: RegisterRequest, db: Session = Depends(get_db)):
             raise HTTPException(
                 status_code=400, detail=res.json().get("msg", "Failed to create user")
             )
-
         user_id = res.json()["id"]
 
-    # Create profile
+    # Create profile (no community string column)
     profile = Profile(
         id=user_id,
         email=body.email,
         username=body.username,
         address=body.address,
-        community=body.community,
         bio=body.bio,
     )
     db.add(profile)
-    db.commit()
+    db.flush()  # get profile.id into session before linking community
+
+    # Link community via join table
+    if body.community:
+        community = db.query(Community).filter(Community.name == body.community).first()
+        if not community:
+            community = Community(name=body.community, lake_name=body.community)
+            db.add(community)
+            db.flush()
+        profile.communities.append(community)
 
     # Create items
     if body.items:
@@ -195,8 +245,8 @@ async def register(body: RegisterRequest, db: Session = Depends(get_db)):
                     category=category_enum,
                 )
             )
-        db.commit()
 
+    db.commit()
     return {"user_id": user_id}
 
 
