@@ -39,7 +39,7 @@ export default function ReviewStep() {
       {data.items.map((item, i) => (
         <View key={i} style={s.reviewItemCard}>
           <Text style={s.reviewItemName}>{item.name}
-            <Text style={{ fontWeight: "400", color: COLORS.gray }}> · {item.category}</Text>
+            <Text style={s.categorySubtext}> · {item.category}</Text>
           </Text>
           {!!item.description && (
             <Text style={s.reviewItemDescription}>{item.description}</Text>

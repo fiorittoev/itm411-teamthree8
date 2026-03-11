@@ -1,4 +1,24 @@
-import { StyleSheet } from "react-native"
+import { StyleSheet, Dimensions } from "react-native"
+
+const { width, height } = Dimensions.get('window')
+
+// ─── Responsive Breakpoints ──────────────────────────────────────────────────
+const isSmallPhone = width < 375
+const isPhone = width < 768
+const isTablet = width >= 768
+
+// ─── Scaling Functions ───────────────────────────────────────────────────────
+const scale = (size: number) => {
+  if (isSmallPhone) return size * 0.85
+  if (isTablet) return size * 1.15
+  return size
+}
+
+const scaleHeight = (size: number) => {
+  if (isSmallPhone) return size * 0.8
+  if (isTablet) return size * 1.1
+  return size
+}
 
 export const mainStyles = StyleSheet.create({
   // ─── Common ──────────────────────────────────────────────────────────────────
@@ -212,10 +232,10 @@ export const mainStyles = StyleSheet.create({
   // ─── Marketplace Screen ───────────────────────────────────────────────────────
   marketplace: { 
     flex: 1, 
-    margin: 12, 
+    margin: 15, 
     backgroundColor: 'white', 
     borderRadius: 8, 
-    overflow: 'hidden' 
+    overflow: 'hidden'
   },
   marketHeader: { 
     flexDirection: 'row', 
@@ -250,7 +270,8 @@ export const mainStyles = StyleSheet.create({
   },
   card: { 
     flex: 1, 
-    maxWidth: 25 
+    width: "33%",
+    maxWidth: "10%",
   },
   cardImg: {
     width: '100%', 
@@ -596,4 +617,834 @@ export const mainStyles = StyleSheet.create({
     textAlign: 'center',
     color: '#222',
   },
+
+  // ─── Search Screen ───────────────────────────────────────────────────────────
+  searchPanel: {
+    flex: 1,
+    margin: 12,
+    backgroundColor: 'white',
+    borderRadius: 8,
+    overflow: 'hidden',
+    flexDirection: 'column',
+  },
+  searchHeader: {
+    padding: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+    gap: 12,
+  },
+  searchInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    backgroundColor: '#f9f9f9',
+  },
+  searchInput: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    fontSize: 15,
+    color: '#222',
+  },
+  searchClearBtn: {
+    padding: 4,
+  },
+  filterSection: {
+    gap: 10,
+  },
+  filterLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#555',
+  },
+  filterOptions: {
+    flexDirection: 'row',
+    gap: 8,
+    flexWrap: 'wrap',
+  },
+  filterOption: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    backgroundColor: '#fafafa',
+  },
+  filterOptionActive: {
+    backgroundColor: '#4F728C',
+    borderColor: '#4F728C',
+  },
+  filterOptionText: {
+    fontSize: 12,
+    color: '#333',
+    fontWeight: '500',
+  },
+  filterOptionTextActive: {
+    color: 'white',
+  },
+  searchContent: {
+    flex: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  categorySection: {
+    marginBottom: 20,
+  },
+  categoryTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#222',
+    marginBottom: 10,
+    paddingLeft: 2,
+  },
+  
+  // Item Results
+  itemResult: {
+    flexDirection: 'row',
+    backgroundColor: '#fafafa',
+    borderRadius: 8,
+    marginBottom: 10,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+  itemResultImage: {
+    width: 80,
+    height: 80,
+    backgroundColor: '#e0e0e0',
+  },
+  itemResultContent: {
+    flex: 1,
+    padding: 10,
+    justifyContent: 'space-between',
+  },
+  itemResultTop: {
+    gap: 4,
+  },
+  itemResultName: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#222',
+  },
+  itemResultDesc: {
+    fontSize: 11,
+    color: '#666',
+    lineHeight: 14,
+  },
+  itemResultFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  itemResultPrice: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#187bcd',
+  },
+  itemResultSeller: {
+    fontSize: 10,
+    color: '#999',
+  },
+
+  // User Results
+  userResult: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f5f7fa',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#dce8f1',
+    gap: 12,
+  },
+  userResultAvatar: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#9fb7c8',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  userResultContent: {
+    flex: 1,
+    gap: 3,
+  },
+  userResultName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#222',
+  },
+  userResultBio: {
+    fontSize: 12,
+    color: '#666',
+    lineHeight: 16,
+  },
+  userResultAddress: {
+    fontSize: 10,
+    color: '#999',
+  },
+
+  // Community Results
+  communityResult: {
+    backgroundColor: '#f0f7fc',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#c8dce8',
+    gap: 8,
+  },
+  communityResultName: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#1c3b54',
+  },
+  communityResultDesc: {
+    fontSize: 12,
+    color: '#555',
+    lineHeight: 16,
+  },
+  communityResultFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  communityResultLake: {
+    fontSize: 11,
+    color: '#666',
+    fontWeight: '500',
+  },
+  communityResultMembers: {
+    fontSize: 11,
+    color: '#4F728C',
+    fontWeight: '600',
+  },
+
+  searchEmpty: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  searchEmptyText: {
+    fontSize: 14,
+    color: '#888',
+    textAlign: 'center',
+  },
+
+  // ─── Additional Spacing & Layout ─────────────────────────────────────────────
+  spacerSmall: {
+    height: 20,
+  },
+  spacerMedium: {
+    height: 40,
+  },
+  centeredContent: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  profileActionSmall: {
+    marginTop: 16,
+    alignSelf: 'center',
+    paddingHorizontal: 24,
+  },
+  
+  // ─── Form Errors & States ──────────────────────────────────────────────────────
+  inputError: {
+    borderColor: '#e74c3c',
+    borderWidth: 1,
+  },
+  imagePlaceholderError: {
+    color: '#e74c3c',
+  },
+  logoutBtn: {
+    backgroundColor: '#c0392b',
+  },
+
+  // ─── Content Containers ────────────────────────────────────────────────────────
+  contentGapSmall: {
+    gap: 10,
+  },
+  contentGapMedium: {
+    gap: 12,
+  },
+  contentGapLarge: {
+    gap: 14,
+  },
+  scrollContentPadding: {
+    padding: 14,
+  },
+  profileContentPadding: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 24,
+  },
+  profileContentMargin: {
+    marginBottom: 12,
+  },
+  
+  // ─── Search & Results ───────────────────────────────────────────────────────────
+  searchProfileContainer: {
+    alignItems: 'center',
+    gap: 8,
+  },
+  searchItemsRow: {
+    flexDirection: 'row',
+    backgroundColor: '#fafafa',
+    borderRadius: 6,
+    padding: 8,
+    marginBottom: 6,
+    gap: 8,
+  },
+  searchItemImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 4,
+  },
+  searchItemContainer: {
+    flex: 1,
+    justifyContent: 'space-between',
+  },
+  searchItemName: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#222',
+  },
+  searchItemPrice: {
+    fontSize: 12,
+    color: '#187bcd',
+    fontWeight: '700',
+  },
+  userProfileLabel: {
+    fontSize: 12,
+    color: '#666',
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  userProfileText: {
+    fontSize: 14,
+    color: '#222',
+  },
+  userListingLabel: {
+    fontSize: 12,
+    color: '#666',
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  userListingEmpty: {
+    fontSize: 12,
+    color: '#aaa',
+  },
+  detailScrollContent: {
+    gap: 10,
+  },
+
+  // ─── Address & Community Selection ───────────────────────────────────────────────
+  addressInputContainer: {
+    position: 'relative',
+    zIndex: 10,
+  },
+  addressInputBase: {
+    marginBottom: 0,
+  },
+  addressSuggestions: {
+    position: 'absolute',
+    top: '100%',
+    left: 0,
+    right: 0,
+    backgroundColor: 'white',
+    borderRadius: 8,
+    zIndex: 20,
+    shadowColor: '#000',
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 6,
+  },
+  addressSuggestionItem: {
+    padding: 12,
+  },
+  addressSuggestionText: {
+    fontSize: 14,
+    color: '#333',
+  },
+  addressAptField: {
+    marginTop: 10,
+  },
+  addressConfirmed: {
+    padding: 12,
+    borderRadius: 8,
+    marginVertical: 8,
+    backgroundColor: '#f0f7ff',
+    borderWidth: 1,
+    borderColor: '#4F728C',
+  },
+  addressConfirmedLabel: {
+    fontSize: 13,
+    color: '#4F728C',
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  addressConfirmedText: {
+    fontSize: 13,
+    color: '#333',
+  },
+  addressChangeLink: {
+    color: '#4F728C',
+    fontSize: 13,
+    marginTop: 6,
+  },
+  communitySelectorContainer: {
+    marginTop: 12,
+  },
+  communityLoadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    padding: 8,
+  },
+  communityLoadingText: {
+    color: '#666',
+    fontSize: 13,
+  },
+  communityNotFound: {
+    padding: 12,
+    backgroundColor: '#fff8e1',
+    borderRadius: 8,
+  },
+  communityNotFoundText: {
+    color: '#b8860b',
+    fontWeight: '600',
+  },
+  communityNotFoundSubtext: {
+    color: '#b8860b',
+    fontSize: 12,
+    marginTop: 4,
+  },
+  communityOption: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 6,
+    borderWidth: 1.5,
+  },
+  communityOptionSelected: {
+    borderColor: '#4F728C',
+    backgroundColor: '#eaf2f8',
+  },
+  communityOptionUnselected: {
+    borderColor: '#ddd',
+    backgroundColor: '#fafafa',
+  },
+  communityOptionLabel: {
+    fontWeight: '600',
+  },
+  communityOptionLabelSelected: {
+    color: '#4F728C',
+  },
+  communityOptionLabelUnselected: {
+    color: '#333',
+  },
+  communityOptionSubtext: {
+    fontSize: 12,
+    marginTop: 2,
+  },
+  communityOptionSubtextExisting: {
+    color: '#888',
+  },
+  communityOptionSubtextNew: {
+    color: '#e67e22',
+  },
+  communityOptionCheck: {
+    color: '#4F728C',
+    fontWeight: '700',
+  },
+
+  // ─── Community Posts ─────────────────────────────────────────────────────────────
+  communityHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 12,
+  },
+  communityHeaderTitle: {
+    flex: 1,
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#222',
+  },
+  communityLakeInfo: {
+    fontSize: 12,
+    color: '#666',
+  },
+  communityFeedHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  communityFeedLabel: {
+    fontSize: 12,
+    color: '#666',
+    fontWeight: '600',
+  },
+  communityFilterOption: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  communityFeedContent: {
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  communityPostHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  communityPostModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  communityPostCloseText: {
+    fontSize: 16,
+    color: '#4F728C',
+    fontWeight: '600',
+  },
+  communityPostTitleText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#222',
+  },
+  communityPostSubmitText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  communityPostSubmitDisabled: {
+    color: '#ccc',
+  },
+  communityPostSubmitEnabled: {
+    color: '#4F728C',
+  },
+  communityPostBox: {
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  communityPostBoxDefault: {
+    borderColor: '#ddd',
+    backgroundColor: 'white',
+  },
+
+  // ─── Delete Confirmation Modal ───────────────────────────────────────────────
+  deleteModalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  deleteModalContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 10,
+  },
+  deleteModalTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#222',
+    marginBottom: 10,
+  },
+  deleteModalText: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 20,
+  },
+  deleteModalButtonRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 10,
+  },
+  deleteModalButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+  },
+  deleteModalButtonTextDanger: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: 'white',
+  },
+
+  // ─── Post Modal Header ───────────────────────────────────────────────────────
+  postModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  postModalCloseText: {
+    fontSize: 16,
+    color: '#4F728C',
+    fontWeight: '600',
+  },
+  postModalTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#222',
+  },
+  postModalSubmitText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  postModalSubmitEnabled: {
+    color: '#4F728C',
+  },
+  postModalSubmitDisabled: {
+    color: '#ccc',
+  },
+
+  // ─── Profile & Layout Helpers ───────────────────────────────────────────────
+  profileScrollGrow: {
+    flexGrow: 1,
+  },
+  flexContainer: {
+    flex: 1,
+  },
+  spacerSmallHeight: {
+    height: 20,
+  },
+
+  // ─── Delete Confirmation Modal Box ───────────────────────────────────────────
+  deleteConfirmBox: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+    width: '80%',
+    maxWidth: 300,
+  },
+  deleteConfirmButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 6,
+  },
+  deleteConfirmButtonCancel: {
+    backgroundColor: '#f0f0f0',
+  },
+  deleteConfirmButtonDelete: {
+    backgroundColor: '#E67E73',
+  },
 })
+
+// ─── Mobile Responsive Styles ─────────────────────────────────────────────────
+export const responsiveStyles = StyleSheet.create({
+  // Mobile navbar adjustments
+  navbarMobile: {
+    height: scaleHeight(56),
+    paddingHorizontal: isSmallPhone ? 8 : 16,
+  },
+  logoMobile: {
+    fontSize: scale(17),
+    marginRight: isSmallPhone ? 6 : 12,
+  },
+  
+  // Mobile body layout
+  bodyMobile: {
+    flexDirection: isPhone ? 'column' : 'row',
+    gap: isPhone ? 8 : 10,
+    padding: isSmallPhone ? 6 : 10,
+  },
+  
+  // Mobile panels
+  leftPanelMobile: {
+    width: isPhone ? '100%' : 190,
+    height: isPhone ? undefined : undefined,
+    padding: isSmallPhone ? 8 : 12,
+  },
+  rightPanelMobile: {
+    width: isPhone ? '100%' : 80,
+    gap: isPhone ? 16 : 30,
+  },
+  
+  // Mobile listing grid
+  listingCardMobile: {
+    width: isPhone ? (width - 24 - 16 - 6) / 2 : (190 - 24 - 6) / 2,
+    height: isPhone ? (width - 24 - 16 - 6) / 2 : (190 - 24 - 6) / 2,
+  },
+  
+  // Mobile marketplace grid
+  gridContentMobile: {
+    padding: isSmallPhone ? 8 : 14,
+  },
+  gridRowMobile: {
+    gap: isSmallPhone ? 8 : 14,
+  },
+  cardMobile: {
+    flex: 1,
+    maxWidth: isSmallPhone ? 50 : 25,
+  },
+  
+  // Mobile detail modal
+  detailBoxMobile: {
+    width: isPhone ? '95%' : '92%',
+    flexDirection: isPhone ? 'column' : 'row',
+    maxHeight: isPhone ? '90%' : '88%',
+  },
+  
+  // Mobile profile
+  profilePanelMobile: {
+    margin: isSmallPhone ? 6 : 12,
+  },
+  profileHeaderMobile: {
+    paddingVertical: scaleHeight(24),
+    paddingHorizontal: isSmallPhone ? 8 : 16,
+  },
+  profileAvatarMobile: {
+    width: isPhone ? 72 : 88,
+    height: isPhone ? 72 : 88,
+    borderRadius: isPhone ? 36 : 44,
+  },
+  profileNameMobile: {
+    fontSize: scale(20),
+  },
+  
+  // Mobile settings
+  settingsPanelMobile: {
+    margin: isSmallPhone ? 6 : 12,
+  },
+  settingsContentMobile: {
+    padding: isSmallPhone ? 8 : 16,
+  },
+  settingsRowMobile: {
+    paddingVertical: isSmallPhone ? 8 : 12,
+    paddingHorizontal: isSmallPhone ? 2 : 4,
+  },
+  
+  // Mobile search
+  searchPanelMobile: {
+    margin: isSmallPhone ? 6 : 12,
+  },
+  searchHeaderMobile: {
+    padding: isSmallPhone ? 8 : 14,
+    gap: isSmallPhone ? 8 : 12,
+  },
+  filterOptionMobile: {
+    paddingHorizontal: isSmallPhone ? 8 : 12,
+    paddingVertical: 6,
+  },
+  itemResultMobile: {
+    marginBottom: isSmallPhone ? 6 : 10,
+  },
+  userResultMobile: {
+    padding: isSmallPhone ? 8 : 12,
+  },
+  
+  // Mobile modal
+  modalBoxMobile: {
+    width: isSmallPhone ? '90%' : '85%',
+    padding: isSmallPhone ? 14 : 22,
+  },
+  modalTitleMobile: {
+    fontSize: scale(17),
+  },
+  
+  // Mobile forms
+  inputMobile: {
+    padding: isSmallPhone ? 8 : 10,
+    fontSize: scale(15),
+  },
+  postInputMobile: {
+    padding: isSmallPhone ? 8 : 10,
+    minHeight: isSmallPhone ? 70 : 90,
+  },
+  imagePlaceholderMobile: {
+    height: isSmallPhone ? 80 : 100,
+  },
+})
+
+// ─── Tablet Specific Styles ───────────────────────────────────────────────────
+export const tabletStyles = StyleSheet.create({
+  // Tablet multi-column layouts
+  bodyTablet: {
+    flexDirection: 'row',
+    gap: 12,
+    padding: 12,
+  },
+  
+  // Expanded panels
+  leftPanelTablet: {
+    width: 240,
+    padding: 14,
+  },
+  rightPanelTablet: {
+    width: 100,
+  },
+  
+  // Larger grid for tablet
+  gridRowTablet: {
+    gap: 16,
+  },
+  cardTablet: {
+    flex: 1,
+    maxWidth: 30,
+  },
+  
+  // Larger detail view
+  detailBoxTablet: {
+    width: '80%',
+    maxHeight: '80%',
+  },
+  
+  // Larger modals
+  modalBoxTablet: {
+    width: '70%',
+    maxWidth: 600,
+  },
+})
+
+// ─── Small Phone Styles (< 375px) ────────────────────────────────────────────
+export const smallPhoneStyles = StyleSheet.create({
+  safe: {
+    flex: 1,
+    backgroundColor: '#f2f2f2',
+  },
+  navbar: {
+    height: 48,
+    paddingHorizontal: 8,
+  },
+  logo: {
+    fontSize: 14,
+    marginRight: 6,
+  },
+  panelTitle: {
+    fontSize: 13,
+    marginBottom: 6,
+  },
+  filterBtn: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  filterBtnText: {
+    fontSize: 10,
+  },
+  postBox: {
+    padding: 10,
+    marginBottom: 10,
+  },
+  profilePanel: {
+    margin: 6,
+  },
+  settingsPanel: {
+    margin: 6,
+  },
+  modalBox: {
+    width: '90%',
+    padding: 14,
+  },
+})
+

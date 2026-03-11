@@ -11,6 +11,7 @@ from app.db.session import get_db
 from app.db.models import Interest, Community, Item
 from app.routers.posts_items import router as posts_items_router
 from app.routers.posts_items import PostType, ItemCategory
+from app.routers.search import router as search_router
 from pydantic import BaseModel
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
@@ -32,6 +33,7 @@ app.add_middleware(
 # ─── Routers ──────────────────────────────────────────────────────────────────
 
 app.include_router(posts_items_router)
+app.include_router(search_router)
 
 
 # ─── Core routes ──────────────────────────────────────────────────────────────

@@ -156,25 +156,6 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={s.safe}>
-      {/* NAV */}
-      <View style={s.navbar}>
-        <Text style={s.logo}>MyMichiganLake</Text>
-        <View style={s.navIcons}>
-          <TouchableOpacity><Ionicons name="home" size={28} color="white" /></TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push('/main/marketplace')}>
-            <Ionicons name="cart-outline" size={28} color="white" />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push('/main/settings')}>
-            <Ionicons name="settings-outline" size={28} color="white" />
-          </TouchableOpacity>
-        </View>
-        <TouchableOpacity onPress={() => router.push('/main/profile')}>
-          <View style={s.profileCircle}>
-            <Ionicons name="person-outline" size={20} color="white" />
-          </View>
-        </TouchableOpacity>
-      </View>
-
       {/* BODY */}
       <View style={s.body}>
         {/* LEFT */}
@@ -210,7 +191,7 @@ export default function HomeScreen() {
           <FlatList
             data={posts}
             keyExtractor={p => p.id}
-            contentContainerStyle={{ padding: 14 }}
+            contentContainerStyle={s.scrollContentPadding}
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
             renderItem={({ item }) => (
               <PostCard post={item} currentAuthorId={currentAuthorId} onDelete={promptDelete} />

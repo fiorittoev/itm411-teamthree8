@@ -10,14 +10,12 @@ import {
   Image, Dimensions, KeyboardAvoidingView, Platform,
   SafeAreaView, Alert, ActivityIndicator, RefreshControl, ScrollView,
 } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { api, ItemOut } from '../../services/api';
 import { supabase } from '../../services/supabase';
 import { mainStyles as s } from '../styles/main/mainStyles';
-
-const { width } = Dimensions.get('window');
 
 type Filter = 'all' | 'yours' | 'favorites';
 
@@ -49,7 +47,7 @@ function MarketCard({ item, isFav, onPress, onToggleFav }: {
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
 export default function MarketplaceScreen() {
-  const router = useRouter();
+  
   const { openItemId } = useLocalSearchParams<{ openItemId?: string }>();
 
   const [items, setItems]         = useState<ItemOut[]>([]);
@@ -230,28 +228,6 @@ export default function MarketplaceScreen() {
 
   return (
     <SafeAreaView style={s.safe}>
-
-      {/* NAV */}
-      <View style={s.navbar}>
-        <Text style={s.logo}>MyMichiganLake</Text>
-        <View style={s.navIcons}>
-          <TouchableOpacity onPress={() => router.push('/main')}>
-            <Ionicons name="home-outline" size={28} color="white" />
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <Ionicons name="cart" size={28} color="white" />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push('/main/settings')}>
-            <Ionicons name="settings-outline" size={28} color="white" />
-          </TouchableOpacity>
-        </View>
-        <TouchableOpacity onPress={() => router.push('/main/profile')}>
-          <View style={s.profileCircle}>
-            <Ionicons name="person-outline" size={20} color="white" />
-          </View>
-        </TouchableOpacity>
-      </View>
-
       {/* MARKETPLACE */}
       <View style={s.marketplace}>
         <View style={s.marketHeader}>
@@ -301,7 +277,7 @@ export default function MarketplaceScreen() {
 
               {/* Name */}
               <TextInput
-                style={[s.input, errors.name ? { borderColor: '#e74c3c', borderWidth: 1 } : null]}
+                style={[s.input, errors.name ? s.inputError : null]}
                 placeholder="Item Name"
                 value={itemName}
                 onChangeText={v => { setItemName(v); setErrors(prev => ({ ...prev, name: undefined })); }}
@@ -310,7 +286,7 @@ export default function MarketplaceScreen() {
 
               {/* Price */}
               <TextInput
-                style={[s.input, errors.price ? { borderColor: '#e74c3c', borderWidth: 1 } : null]}
+                style={[s.input, errors.price ? s.inputError : null]}
                 placeholder="Price"
                 value={itemPrice}
                 onChangeText={v => { setItemPrice(v); setErrors(prev => ({ ...prev, price: undefined })); }}
@@ -320,7 +296,7 @@ export default function MarketplaceScreen() {
 
               {/* Description */}
               <TextInput
-                style={[s.input, s.textarea, errors.desc ? { borderColor: '#e74c3c', borderWidth: 1 } : null]}
+                style={[s.input, s.textarea, errors.desc ? s.inputError : null]}
                 placeholder="Description"
                 value={itemDesc}
                 onChangeText={v => { setItemDesc(v); setErrors(prev => ({ ...prev, desc: undefined })); }}
@@ -332,14 +308,14 @@ export default function MarketplaceScreen() {
 
               {/* Image */}
               <TouchableOpacity
-                style={[s.imagePicker, errors.image ? { borderColor: '#e74c3c', borderWidth: 1 } : null]}
+                style={[s.imagePicker, errors.image ? s.inputError : null]}
                 onPress={pickImage}
               >
                 {itemImage
                   ? <Image source={{ uri: itemImage }} style={s.imagePreview} />
                   : <View style={s.imagePlaceholder}>
                       <Ionicons name="image-outline" size={32} color={errors.image ? '#e74c3c' : '#888'} />
-                      <Text style={[s.imagePlaceholderText, errors.image ? { color: '#e74c3c' } : null]}>
+                      <Text style={[s.imagePlaceholderText, errors.image ? s.imagePlaceholderError : null]}>
                         Tap to select photo
                       </Text>
                     </View>
@@ -379,7 +355,7 @@ export default function MarketplaceScreen() {
                 <Image source={{ uri: detailItem.image }} style={s.detailImg} />
                 <ScrollView
                   style={s.detailInfo}
-                  contentContainerStyle={{ gap: 10 }}
+                  contentContainerStyle={s.contentGapSmall}
                   showsVerticalScrollIndicator={false}
                 >
                   <Text style={s.detailName}>{detailItem.name}</Text>

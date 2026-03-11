@@ -46,7 +46,7 @@ export default function InterestStep() {
         data={ALL_INTERESTS}
         keyExtractor={(item) => item}
         numColumns={2}
-        columnWrapperStyle={{ justifyContent: "space-between", marginBottom: 10 }}
+        columnWrapperStyle={s.interestColumnWrapper}
         renderItem={({ item }) => (
           <TouchableOpacity
             onPress={() => toggleInterest(item)}

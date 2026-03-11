@@ -313,27 +313,6 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView style={s.safe}>
-      {/* ── NAV ── */}
-      <View style={s.navbar}>
-        <Text style={s.logo}>MyMichiganLake</Text>
-        <View style={s.navIcons}>
-          <TouchableOpacity onPress={() => router.push('/main')}>
-            <Ionicons name="home-outline" size={28} color="white" />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push('/main/marketplace')}>
-            <Ionicons name="cart-outline" size={28} color="white" />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push('/main/settings')}>
-            <Ionicons name="settings" size={28} color="white" />
-          </TouchableOpacity>
-        </View>
-        <TouchableOpacity onPress={() => router.push('/main/profile')}>
-          <View style={s.profileCircle}>
-            <Ionicons name="person-outline" size={20} color="white" />
-          </View>
-        </TouchableOpacity>
-      </View>
-
       {/* ── BODY ── */}
       <View style={s.settingsPanel}>
         <ScrollView contentContainerStyle={s.settingsContent} showsVerticalScrollIndicator={false}>
@@ -452,7 +431,7 @@ export default function SettingsScreen() {
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity style={[s.btn, { backgroundColor: '#c0392b' }]} onPress={handleLogout}>
+          <TouchableOpacity style={[s.btn, s.logoutBtn]} onPress={handleLogout}>
             <Text style={s.btnText}>Logout</Text>
           </TouchableOpacity>
         </ScrollView>
@@ -517,31 +496,25 @@ export default function SettingsScreen() {
 
                 {/* Autocomplete input */}
                 <Text style={s.settingsRowLabel}>Search your address</Text>
-                <View style={{ position: 'relative', zIndex: 10 }}>
+                <View style={s.addressInputContainer}>
                   <TextInput
-                    style={[s.input, { marginBottom: 0 }]}
+                    style={[s.input, s.addressInputBase]}
                     placeholder="Start typing your address..."
                     value={inputText}
                     onChangeText={handleAddressInput}
                   />
                   {suggestions.length > 0 && (
-                    <View style={{
-                      position: 'absolute', top: '100%', left: 0, right: 0,
-                      backgroundColor: 'white', borderRadius: 8, zIndex: 20,
-                      shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 6,
-                      elevation: 6,
-                    }}>
+                    <View style={s.addressSuggestions}>
                       {suggestions.map((suggestion, i) => (
                         <TouchableOpacity
                           key={suggestion.place_id}
                           onPress={() => selectSuggestion(suggestion)}
-                          style={{
-                            padding: 12,
+                          style={[s.addressSuggestionItem, {
                             borderBottomWidth: i < suggestions.length - 1 ? 1 : 0,
                             borderBottomColor: '#eee',
-                          }}
+                          }]}
                         >
-                          <Text style={{ fontSize: 14, color: '#333' }}>{suggestion.description}</Text>
+                          <Text style={s.addressSuggestionText}>{suggestion.description}</Text>
                         </TouchableOpacity>
                       ))}
                     </View>
@@ -550,7 +523,7 @@ export default function SettingsScreen() {
 
                 {/* Apt field */}
                 <TextInput
-                  style={[s.input, { marginTop: 10 }]}
+                  style={[s.input, s.addressAptField]}
                   placeholder="Apt, Suite, Unit (optional)"
                   value={addrComponents.apt}
                   onChangeText={(v) => setAddrComponents((prev) => ({ ...prev, apt: v }))}
@@ -558,36 +531,33 @@ export default function SettingsScreen() {
 
                 {/* Confirmed address preview */}
                 {addressConfirmed && (
-                  <View style={{
-                    padding: 12, borderRadius: 8, marginVertical: 8,
-                    backgroundColor: '#f0f7ff', borderWidth: 1, borderColor: '#4F728C',
-                  }}>
-                    <Text style={{ fontSize: 13, color: '#4F728C', fontWeight: '600', marginBottom: 4 }}>
+                  <View style={s.addressConfirmed}>
+                    <Text style={s.addressConfirmedLabel}>
                       ✓ Address confirmed
                     </Text>
-                    <Text style={{ fontSize: 13, color: '#333' }}>{fullAddrPreview}</Text>
-                    <TouchableOpacity onPress={resetAddressFlow} style={{ marginTop: 6 }}>
-                      <Text style={{ color: '#4F728C', fontSize: 13 }}>Change address</Text>
+                    <Text style={s.addressConfirmedText}>{fullAddrPreview}</Text>
+                    <TouchableOpacity onPress={resetAddressFlow} style={s.addressChangeLink}>
+                      <Text style={s.addressChangeLink}>Change address</Text>
                     </TouchableOpacity>
                   </View>
                 )}
 
                 {/* Lake community picker */}
                 {addressConfirmed && (
-                  <View style={{ marginTop: 12 }}>
+                  <View style={s.communitySelectorContainer}>
                     <Text style={s.settingsRowLabel}>Select Lake Community</Text>
 
                     {addrLoading && (
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, padding: 8 }}>
+                      <View style={s.communityLoadingContainer}>
                         <ActivityIndicator color="#4F728C" />
-                        <Text style={{ color: '#666', fontSize: 13 }}>Finding nearby lakes...</Text>
+                        <Text style={s.communityLoadingText}>Finding nearby lakes...</Text>
                       </View>
                     )}
 
                     {!addrLoading && addrSearched && lakeOptions.length === 0 && (
-                      <View style={{ padding: 12, backgroundColor: '#fff8e1', borderRadius: 8 }}>
-                        <Text style={{ color: '#b8860b', fontWeight: '600' }}>No lakes found near this address</Text>
-                        <Text style={{ color: '#b8860b', fontSize: 12, marginTop: 4 }}>
+                      <View style={s.communityNotFound}>
+                        <Text style={s.communityNotFoundText}>No lakes found near this address</Text>
+                        <Text style={s.communityNotFoundSubtext}>
                           Double-check your address or try a nearby ZIP code.
                         </Text>
                       </View>
@@ -599,23 +569,26 @@ export default function SettingsScreen() {
                         <TouchableOpacity
                           key={lake.name}
                           onPress={() => setPendingCommunity(lake)}
-                          style={{
-                            flexDirection: 'row', justifyContent: 'space-between',
-                            alignItems: 'center', padding: 12, borderRadius: 8,
-                            marginBottom: 6, borderWidth: 1.5,
-                            borderColor: selected ? '#4F728C' : '#ddd',
-                            backgroundColor: selected ? '#eaf2f8' : '#fafafa',
-                          }}
+                          style={[
+                            s.communityOption,
+                            selected ? s.communityOptionSelected : s.communityOptionUnselected,
+                          ]}
                         >
                           <View>
-                            <Text style={{ fontWeight: '600', color: selected ? '#4F728C' : '#333' }}>
+                            <Text style={[
+                              s.communityOptionLabel,
+                              selected ? s.communityOptionLabelSelected : s.communityOptionLabelUnselected,
+                            ]}>
                               {lake.name}
                             </Text>
-                            <Text style={{ fontSize: 12, color: lake.id ? '#888' : '#e67e22', marginTop: 2 }}>
+                            <Text style={[
+                              s.communityOptionSubtext,
+                              lake.id ? s.communityOptionSubtextExisting : s.communityOptionSubtextNew,
+                            ]}>
                               {lake.id ? 'Existing community' : 'New — will be created'}
                             </Text>
                           </View>
-                          {selected && <Text style={{ color: '#4F728C', fontWeight: '700' }}>✓</Text>}
+                          {selected && <Text style={s.communityOptionCheck}>✓</Text>}
                         </TouchableOpacity>
                       );
                     })}

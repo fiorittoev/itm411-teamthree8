@@ -1,4 +1,24 @@
-import { StyleSheet } from "react-native"
+import { StyleSheet, Dimensions } from "react-native"
+
+const { width, height } = Dimensions.get('window')
+
+// ─── Responsive Breakpoints ──────────────────────────────────────────────────
+const isSmallPhone = width < 375
+const isPhone = width < 768
+const isTablet = width >= 768
+
+// ─── Scaling Functions ───────────────────────────────────────────────────────
+const scale = (size: number) => {
+  if (isSmallPhone) return size * 0.85
+  if (isTablet) return size * 1.15
+  return size
+}
+
+const scaleHeight = (size: number) => {
+  if (isSmallPhone) return size * 0.8
+  if (isTablet) return size * 1.1
+  return size
+}
 
 export const COLORS = {
   primary: "#476E8D",
@@ -693,5 +713,270 @@ export const registerStyles = StyleSheet.create({
   endText: {
     fontSize: 16,
     color: COLORS.darkGray,
+  },
+
+  // ===== Additional Layout Styles =====
+  scrollGrowContainer: {
+    flexGrow: 1,
+    paddingBottom: 30,
+  },
+  overflowHidden: {
+    flex: 1,
+    overflow: 'hidden',
+  },
+  interestColumnWrapper: {
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  categorySubtext: {
+    fontWeight: '400',
+    color: COLORS.gray,
+  },
+})
+
+// ─── Mobile Responsive Styles ─────────────────────────────────────────────────
+export const responsiveStyles = StyleSheet.create({
+  // Mobile container adjustments
+  containerMobile: {
+    flex: 1,
+    paddingHorizontal: isSmallPhone ? 12 : 24,
+    paddingTop: isSmallPhone ? 24 : 40,
+  },
+  
+  // Mobile spacing
+  sectionMobile: {
+    marginBottom: isSmallPhone ? 16 : 28,
+  },
+  
+  // Mobile typography
+  titleMobile: {
+    fontSize: scale(26),
+    marginBottom: isSmallPhone ? 4 : 8,
+  },
+  titleLargeMobile: {
+    fontSize: scale(22),
+    marginBottom: isSmallPhone ? 6 : 10,
+  },
+  titleMediumMobile: {
+    fontSize: scale(20),
+    marginBottom: isSmallPhone ? 8 : 16,
+  },
+  subtitleMobile: {
+    fontSize: scale(15),
+    marginBottom: isSmallPhone ? 12 : 24,
+    lineHeight: isSmallPhone ? 18 : 20,
+  },
+  labelMobile: {
+    fontSize: scale(13),
+    marginBottom: isSmallPhone ? 3 : 6,
+  },
+  labelSmallMobile: {
+    fontSize: scale(12),
+    marginBottom: isSmallPhone ? 2 : 3,
+  },
+  bodyTextMobile: {
+    fontSize: scale(15),
+  },
+  
+  // Mobile inputs
+  inputMobile: {
+    paddingVertical: isSmallPhone ? 10 : 12,
+    paddingHorizontal: isSmallPhone ? 10 : 14,
+    fontSize: scale(15),
+    borderRadius: isSmallPhone ? 8 : 10,
+  },
+  textareaMobile: {
+    minHeight: isSmallPhone ? 100 : 120,
+  },
+  
+  // Mobile buttons
+  primaryButtonMobile: {
+    paddingVertical: isSmallPhone ? 12 : 14,
+    borderRadius: isSmallPhone ? 8 : 10,
+  },
+  primaryButtonTextMobile: {
+    fontSize: scale(16),
+  },
+  secondaryButtonMobile: {
+    paddingVertical: isSmallPhone ? 10 : 12,
+    borderRadius: isSmallPhone ? 8 : 10,
+  },
+  secondaryButtonTextMobile: {
+    fontSize: scale(15),
+  },
+  
+  // Mobile chips
+  chipMobile: {
+    paddingHorizontal: isSmallPhone ? 10 : 14,
+    paddingVertical: isSmallPhone ? 6 : 8,
+    borderRadius: 20,
+  },
+  interestChipMobile: {
+    paddingVertical: isSmallPhone ? 8 : 10,
+    paddingHorizontal: isSmallPhone ? 10 : 15,
+  },
+  categoryChipMobile: {
+    paddingHorizontal: isSmallPhone ? 8 : 12,
+    paddingVertical: isSmallPhone ? 4 : 6,
+  },
+  
+  // Mobile cards
+  cardMobile: {
+    borderRadius: isSmallPhone ? 10 : 14,
+    padding: isSmallPhone ? 12 : 18,
+  },
+  itemCardMobile: {
+    borderRadius: isSmallPhone ? 8 : 10,
+    padding: isSmallPhone ? 10 : 14,
+    marginBottom: isSmallPhone ? 8 : 10,
+  },
+  itemFormMobile: {
+    borderRadius: isSmallPhone ? 10 : 12,
+    padding: isSmallPhone ? 12 : 16,
+  },
+  
+  // Mobile progress bar
+  progressBackgroundMobile: {
+    height: isSmallPhone ? 4 : 6,
+    marginTop: isSmallPhone ? 10 : 16,
+  },
+  
+  // Mobile containers
+  paddingContainerMobile: {
+    padding: isSmallPhone ? 12 : 20,
+  },
+  scrollContainerMobile: {
+    padding: isSmallPhone ? 12 : 20,
+  },
+  reviewContainerMobile: {
+    padding: isSmallPhone ? 12 : 20,
+    gap: isSmallPhone ? 8 : 12,
+  },
+  endContainerMobile: {
+    padding: isSmallPhone ? 12 : 20,
+  },
+  
+  // Mobile address/community styles
+  suggestionsContainerMobile: {
+    borderRadius: isSmallPhone ? 6 : 8,
+  },
+  communityOptionMobile: {
+    padding: isSmallPhone ? 10 : 12,
+    borderRadius: isSmallPhone ? 6 : 8,
+  },
+  communityHeaderMobile: {
+    padding: isSmallPhone ? 10 : 14,
+  },
+  communityContentMobile: {
+    padding: isSmallPhone ? 10 : 14,
+  },
+})
+
+// ─── Tablet Specific Styles ───────────────────────────────────────────────────
+export const tabletStyles = StyleSheet.create({
+  // Tablet container
+  containerTablet: {
+    flex: 1,
+    paddingHorizontal: 32,
+    paddingTop: 48,
+  },
+  
+  // Tablet spacing
+  sectionTablet: {
+    marginBottom: 32,
+  },
+  
+  // Tablet typography
+  titleTablet: {
+    fontSize: 28,
+    marginBottom: 10,
+  },
+  titleLargeTablet: {
+    fontSize: 24,
+    marginBottom: 12,
+  },
+  titleMediumTablet: {
+    fontSize: 22,
+    marginBottom: 18,
+  },
+  subtitleTablet: {
+    fontSize: 16,
+    marginBottom: 28,
+    lineHeight: 22,
+  },
+  
+  // Tablet inputs & buttons
+  inputTablet: {
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    fontSize: 16,
+  },
+  primaryButtonTablet: {
+    paddingVertical: 16,
+  },
+  primaryButtonTextTablet: {
+    fontSize: 17,
+  },
+  
+  // Tablet cards
+  cardTablet: {
+    borderRadius: 16,
+    padding: 20,
+  },
+  itemCardTablet: {
+    borderRadius: 12,
+    padding: 16,
+  },
+})
+
+// ─── Small Phone Styles (< 375px) ────────────────────────────────────────────
+export const smallPhoneStyles = StyleSheet.create({
+  container: {
+    paddingHorizontal: 12,
+    paddingTop: 24,
+  },
+  section: {
+    marginBottom: 16,
+  },
+  title: {
+    fontSize: 22,
+    marginBottom: 4,
+  },
+  titleMedium: {
+    fontSize: 18,
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 13,
+    marginBottom: 12,
+    lineHeight: 18,
+  },
+  label: {
+    fontSize: 11,
+    marginBottom: 3,
+  },
+  input: {
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    fontSize: 13,
+    borderRadius: 8,
+  },
+  button: {
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  card: {
+    borderRadius: 10,
+    padding: 12,
+  },
+  chip: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  paddingContainer: {
+    padding: 12,
+  },
+  scrollContainer: {
+    padding: 12,
   },
 })

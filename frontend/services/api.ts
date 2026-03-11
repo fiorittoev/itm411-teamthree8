@@ -26,6 +26,34 @@ export interface ItemOut {
   created_at: string;
 }
 
+export interface SearchItemResult {
+  id: string;
+  name: string;
+  price: string;
+  description: string;
+  category: string;
+  image: string;
+  owner_id: string;
+  owner_username: string;
+  created_at: string;
+}
+
+export interface SearchUserResult {
+  id: string;
+  username: string;
+  bio: string;
+  profile_image_url: string;
+  address: string;
+}
+
+export interface SearchCommunityResult {
+  id: string;
+  name: string;
+  description: string;
+  lake_name: string;
+  member_count: number;
+}
+
 // ── Auth header helper ────────────────────────────────────────────────────────
 async function authHeader(): Promise<Record<string, string>> {
   const { data } = await supabase.auth.getSession();
@@ -72,4 +100,25 @@ export const api = {
   get: <T>(path: string) => request<T>('GET', path),
   post: <T>(path: string, body: unknown) => request<T>('POST', path, body),
   delete: (path: string) => request<void>('DELETE', path),
+  
+  // Search endpoints
+  search: {
+    items: (q: string, communityId?: string, limit?: number) => {
+      let path = `/search/items?q=${encodeURIComponent(q)}`;
+      if (communityId) path += `&community_id=${communityId}`;
+      if (limit) path += `&limit=${limit}`;
+      return request<SearchItemResult[]>('GET', path);
+    },
+    users: (q: string, communityId?: string, limit?: number) => {
+      let path = `/search/users?q=${encodeURIComponent(q)}`;
+      if (communityId) path += `&community_id=${communityId}`;
+      if (limit) path += `&limit=${limit}`;
+      return request<SearchUserResult[]>('GET', path);
+    },
+    communities: (q: string, limit?: number) => {
+      let path = `/search/communities?q=${encodeURIComponent(q)}`;
+      if (limit) path += `&limit=${limit}`;
+      return request<SearchCommunityResult[]>('GET', path);
+    },
+  },
 };

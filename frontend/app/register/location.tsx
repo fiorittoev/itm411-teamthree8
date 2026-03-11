@@ -176,7 +176,11 @@ export default function LocationStep() {
   }
 
   return (
-    <ScrollView style={s.scrollContainer} keyboardShouldPersistTaps="handled">
+    <ScrollView
+      style={s.scrollContainer}
+      contentContainerStyle={s.scrollGrowContainer}
+      keyboardShouldPersistTaps="handled"
+    >
       <Text style={s.titleMedium}>Your Address</Text>
 
       {/* Autocomplete Input */}

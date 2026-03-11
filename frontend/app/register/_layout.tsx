@@ -107,7 +107,7 @@ function RegisterContent() {
 
       <Text style={s.titleLarge}>Profile Setup</Text>
 
-      <View style={s.section}>
+      <View style={s.overflowHidden}>
         <Slot />
       </View>
 

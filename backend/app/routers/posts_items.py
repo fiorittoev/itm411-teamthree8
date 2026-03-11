@@ -137,8 +137,11 @@ def list_posts(
     user=Depends(get_current_user),
 ):
     q = db.query(Post)
-    if community_id:
-        q = q.filter(Post.community_id == uuid.UUID(community_id))
+    if community_id and community_id != "undefined":
+        try:
+            q = q.filter(Post.community_id == uuid.UUID(community_id))
+        except ValueError:
+            pass
     posts = q.order_by(Post.created_at.desc()).limit(100).all()
 
     results = []

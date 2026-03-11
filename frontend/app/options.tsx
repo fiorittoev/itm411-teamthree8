@@ -8,7 +8,7 @@ export default function Options() {
 
   return (
     <View style={s.container}>
-      <Text style={s.title}>Choose your location</Text>
+      <Text style={s.title}>Welcome!</Text>
 
       <TouchableOpacity
         style={s.button}

@@ -139,25 +139,6 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView style={s.safe}>
-      {/* NAV */}
-      <View style={s.navbar}>
-        <Text style={s.logo}>MyMichiganLake</Text>
-        <View style={s.navIcons}>
-          <TouchableOpacity onPress={() => router.push('/main')}>
-            <Ionicons name="home-outline" size={28} color="white" />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push('/main/marketplace')}>
-            <Ionicons name="cart-outline" size={28} color="white" />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push('/main/settings')}>
-            <Ionicons name="settings-outline" size={28} color="white" />
-          </TouchableOpacity>
-        </View>
-        <View style={s.profileCircle}>
-          <Ionicons name="person" size={20} color="white" />
-        </View>
-      </View>
-
       {/* BODY */}
       <View style={s.profilePanel}>
         <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
@@ -218,8 +199,8 @@ export default function ProfileScreen() {
           </View>
 
           {/* ── My Listings section ── */}
-          <View style={{ paddingHorizontal: 16, paddingTop: 8, paddingBottom: 24 }}>
-            <View style={[s.feedHeader, { marginBottom: 12 }]}>
+          <View style={s.profileContentPadding}>
+            <View style={[s.feedHeader, s.profileContentMargin]}>
               <Text style={s.panelTitle}>My Listings</Text>
               <TouchableOpacity
                 style={s.addBtn}
@@ -230,13 +211,13 @@ export default function ProfileScreen() {
             </View>
 
             {itemsLoading ? (
-              <ActivityIndicator color="#4F728C" style={{ marginTop: 16 }} />
+              <ActivityIndicator color="#4F728C" style={s.spacerSmall} />
             ) : items.length === 0 ? (
-              <View style={{ alignItems: 'center', paddingVertical: 32 }}>
+              <View style={[s.centeredContent, { paddingVertical: 32 }]}>
                 <Ionicons name="cart-outline" size={40} color="#ccc" />
                 <Text style={[s.emptyText, { marginTop: 8 }]}>No listings yet</Text>
                 <TouchableOpacity
-                  style={[s.profileAction, { marginTop: 16, alignSelf: 'center', paddingHorizontal: 24 }]}
+                  style={[s.profileAction, s.profileActionSmall]}
                   onPress={() => router.push('/main/marketplace')}
                 >
                   <Text style={s.profileActionText}>Post a Listing</Text>
@@ -267,7 +248,7 @@ export default function ProfileScreen() {
                 <Image source={{ uri: detailItem.image }} style={s.detailImg} />
                 <ScrollView
                   style={s.detailInfo}
-                  contentContainerStyle={{ gap: 10 }}
+                  contentContainerStyle={s.contentGapSmall}
                   showsVerticalScrollIndicator={false}
                 >
                   <Text style={s.detailName}>{detailItem.name}</Text>

@@ -3,7 +3,7 @@ import { StyleSheet } from "react-native"
 export const COLORS = {
   primary: "#476E8D",
   secondary: "#9CB2C3",
-  background: "#4f6d87",
+  background: "#ffffff",
   white: "#ffffff",
   black: "#000000",
   error: "#e53935",
@@ -15,6 +15,7 @@ export const authStyles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: COLORS.background,
+    color: COLORS.black,
   },
   centered: {
     justifyContent: "center",
@@ -23,13 +24,12 @@ export const authStyles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: "600",
-    color: COLORS.white,
     marginBottom: 20,
     textAlign: "center",
   },
   subtitle: {
     fontSize: 16,
-    color: COLORS.white,
+    
     marginBottom: 20,
   },
   button: {
@@ -48,7 +48,7 @@ export const authStyles = StyleSheet.create({
   },
   field: {
     borderWidth: 1,
-    borderColor: COLORS.white,
+    borderColor: COLORS.border,
     padding: 12,
     marginBottom: 12,
     borderRadius: 8,
@@ -57,7 +57,6 @@ export const authStyles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    color: COLORS.white,
     marginBottom: 6,
   },
   errorText: {
@@ -75,7 +74,7 @@ export const authStyles = StyleSheet.create({
   },
   linkText: {
     textAlign: "center",
-    color: COLORS.white,
+    color: COLORS.primary,
     fontSize: 14,
   },
   loadingContainer: {
