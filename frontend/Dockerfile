@@ -1,18 +1,22 @@
 # Use Node 20
 FROM node:20
 
-# Set working directory
 WORKDIR /app
 
-# Copy package files and install dependencies
+# Install dependencies
 COPY package*.json ./
 RUN npm install
 
-# Copy the rest of the project (including .env)
+# Copy project files
 COPY . .
 
-# Expose ports for Expo
-EXPOSE 19000 19001 19002 8081
+# Build Expo web output
+RUN npx expo export --platform web
 
-# Start Expo with tunnel (works for mobile & web)
-CMD ["npx", "expo", "start", "--tunnel"]
+# Install static file server
+RUN npm install -g serve
+
+# Expo export outputs to /dist
+EXPOSE 19000
+
+CMD ["serve", "-s", "dist", "-l", "19000"]

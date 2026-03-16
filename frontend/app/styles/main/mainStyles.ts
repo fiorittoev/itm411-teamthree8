@@ -1,30 +1,16 @@
 import { StyleSheet, Dimensions } from "react-native"
 
-const { width, height } = Dimensions.get('window')
-
-// ─── Responsive Breakpoints ──────────────────────────────────────────────────
-const isSmallPhone = width < 375
-const isPhone = width < 768
-const isTablet = width >= 768
-
-// ─── Scaling Functions ───────────────────────────────────────────────────────
-const scale = (size: number) => {
-  if (isSmallPhone) return size * 0.85
-  if (isTablet) return size * 1.15
-  return size
-}
-
-const scaleHeight = (size: number) => {
-  if (isSmallPhone) return size * 0.8
-  if (isTablet) return size * 1.1
-  return size
-}
+import { isSmallPhone, isPhone, isTablet, scale, scaleHeight, width } from "../theme"
+export { isSmallPhone, isPhone, isTablet, scale, scaleHeight, width }
 
 export const mainStyles = StyleSheet.create({
   // ─── Common ──────────────────────────────────────────────────────────────────
   safe: { 
     flex: 1, 
-    backgroundColor: '#f2f2f2'
+    marginBlock: 12,
+    marginLeft: 50,
+    marginRight: 50,
+    backgroundColor: '#f2f2f2',
   },
   centered: {
     justifyContent: 'center',
@@ -37,6 +23,16 @@ export const mainStyles = StyleSheet.create({
     alignItems: 'center', 
     paddingHorizontal: 16
   },
+  communityDescription: {
+  fontSize: 13,
+  color: '#666',
+  marginTop: 2,
+},
+communityMemberCount: {
+  fontSize: 12,
+  color: '#888',
+  marginTop: 2,
+},
   logo: { 
     color: 'white', 
     fontSize: 17, 
@@ -1180,6 +1176,75 @@ export const mainStyles = StyleSheet.create({
     fontWeight: '600',
     color: 'white',
   },
+  // Connections panel
+connectionsPanel: {
+  flex: 1,
+  backgroundColor: 'white',
+  borderRadius: 16,
+  padding: 16,
+  paddingTop: 12,
+  maxHeight: '85%',
+},
+connectionsOverlay: {
+  flex: 1,
+  justifyContent: 'center',
+  padding: 20,
+  backgroundColor: 'rgba(0,0,0,0.3)',
+},
+connectionsPanelHeader: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  marginBottom: 12,
+},
+connectionsPanelTitle: {
+  fontSize: 17,
+  fontWeight: '600',
+  color: '#1a1a1a',
+},
+connectionRow: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  paddingVertical: 10,
+  gap: 10,
+  borderBottomWidth: 1,
+  borderBottomColor: '#f0f0f0',
+},
+connectionAvatar: {
+  width: 40,
+  height: 40,
+  borderRadius: 20,
+  backgroundColor: '#4F728C',
+  alignItems: 'center',
+  justifyContent: 'center',
+  overflow: 'hidden',
+},
+connectionName: {
+  fontSize: 14,
+  fontWeight: '600',
+  color: '#1a1a1a',
+},
+connectionMeta: {
+  fontSize: 12,
+  color: '#888',
+  marginTop: 1,
+},
+connectionAcceptBtn: {
+  backgroundColor: '#4F728C',
+  borderRadius: 6,
+  padding: 6,
+},
+connectionDeclineBtn: {
+  backgroundColor: '#e0e0e0',
+  borderRadius: 6,
+  padding: 6,
+},
+connectionEmpty: {
+  textAlign: 'center',
+  color: '#aaa',
+  marginTop: 24,
+  fontSize: 14,
+},
 
   // ─── Post Modal Header ───────────────────────────────────────────────────────
   postModalHeader: {

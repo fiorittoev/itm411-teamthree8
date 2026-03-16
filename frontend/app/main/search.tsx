@@ -7,6 +7,7 @@ import { mainStyles as s } from '../styles/main/mainStyles';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { api, SearchItemResult, SearchUserResult, SearchCommunityResult } from '../../services/api';
+import { ProfileModal } from 'app/components/main';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -29,7 +30,8 @@ export default function SearchScreen() {
   const [selectedCategories, setSelectedCategories] = useState<SearchCategory[]>(['items', 'users', 'communities']);
   const [communityFilter, setCommunityFilter] = useState<CommunityFilter>('all');
   const [userCommunityId, setUserCommunityId] = useState<string | null>(null);
-  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Modal states
   const [selectedItem, setSelectedItem] = useState<SearchItemResult | null>(null);
@@ -41,12 +43,15 @@ export default function SearchScreen() {
   useEffect(() => {
     const getUserCommunity = async () => {
       try {
-        const profile = await api.get('/profile/me');
+        const profile = await api.get<{id: string, community_id: string}>('/profile/me');
         if (profile?.community_id) {
           setUserCommunityId(profile.community_id);
         }
+        if (profile?.id) {
+          setCurrentUserId(profile.id);
+        }
       } catch (error) {
-        console.log('Could not fetch user community');
+        console.log('Could not fetch user profile');
       }
     };
     getUserCommunity();
@@ -79,7 +84,7 @@ export default function SearchScreen() {
   const performSearch = async () => {
     try {
       const newResults: SearchResults = { items: [], users: [], communities: [] };
-      const communityId = communityFilter === 'my-community' ? userCommunityId : undefined;
+      const communityId = (communityFilter === 'my-community' && userCommunityId) ? userCommunityId : undefined;
 
       // Search items
       if (selectedCategories.includes('items')) {
@@ -211,14 +216,17 @@ export default function SearchScreen() {
                   Users
                 </Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                style={[s.filterOption, selectedCategories.includes('communities') && s.filterOptionActive]}
-                onPress={() => toggleCategory('communities')}
-              >
-                <Text style={[s.filterOptionText, selectedCategories.includes('communities') && s.filterOptionTextActive]}>
-                  Communities
-                </Text>
-              </TouchableOpacity>
+              
+              {communityFilter === 'all' && (
+                <TouchableOpacity
+                  style={[s.filterOption, selectedCategories.includes('communities') && s.filterOptionActive]}
+                  onPress={() => toggleCategory('communities')}
+                >
+                  <Text style={[s.filterOptionText, selectedCategories.includes('communities') && s.filterOptionTextActive]}>
+                    Communities
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
         </View>
@@ -382,6 +390,19 @@ export default function SearchScreen() {
                   <Text style={s.detailName}>{selectedItem.name}</Text>
                   <Text style={s.detailPrice}>${selectedItem.price}</Text>
                   <Text style={s.detailSeller}>Posted by: {selectedItem.owner_username}</Text>
+                  
+                  {selectedItem.owner_id !== currentUserId && (
+                    <TouchableOpacity
+                      style={[s.btn, s.btnBlue]}
+                      onPress={() => {
+                        setSelectedItem(null);
+                        router.push(`/main/profile/${selectedItem.owner_id}`);
+                      }}
+                    >
+                      <Text style={s.btnText}>View Seller Profile</Text>
+                    </TouchableOpacity>
+                  )}
+
                   <Text style={s.detailDesc}>{selectedItem.description}</Text>
                   <View style={s.contactBox}>
                     <Text style={s.contactTitle}>Item Details</Text>
@@ -401,94 +422,22 @@ export default function SearchScreen() {
         </View>
       </Modal>
 
-      {/* ── USER PROFILE MODAL ── */}
-      <Modal visible={selectedUser != null} transparent animationType="fade">
-        <View style={s.overlay}>
-          <View style={s.modalBox}>
-            {selectedUser && (
-              <ScrollView
-                contentContainerStyle={s.contentGapMedium}
-                showsVerticalScrollIndicator={false}
-              >
-                {/* Profile Header */}
-                <View style={s.searchProfileContainer}>
-                  <View style={s.userResultAvatar}>
-                    {selectedUser.profile_image_url ? (
-                      <Image
-                        source={{ uri: selectedUser.profile_image_url }}
-                        style={{ width: '100%', height: '100%', borderRadius: 44 }}
-                      />
-                    ) : (
-                      <Ionicons name="person" size={44} color="white" />
-                    )}
-                  </View>
-                  <Text style={s.modalTitle}>{selectedUser.username}</Text>
-                </View>
-
-                {/* Bio */}
-                {selectedUser.bio && (
-                  <View>
-                    <Text style={s.userProfileLabel}>Bio</Text>
-                    <Text style={s.userProfileText}>{selectedUser.bio}</Text>
-                  </View>
-                )}
-
-                {/* Address */}
-                {selectedUser.address && (
-                  <View>
-                    <Text style={s.userProfileLabel}>Location</Text>
-                    <Text style={s.userProfileText}>{selectedUser.address}</Text>
-                  </View>
-                )}
-
-                {/* User's Items */}
-                <View>
-                  <Text style={s.userListingLabel}>
-                    Listings ({selectedUserItems.length})
-                  </Text>
-                  {userLoading ? (
-                    <ActivityIndicator color="#4F728C" />
-                  ) : selectedUserItems.length === 0 ? (
-                    <Text style={s.userListingEmpty}>No listings yet</Text>
-                  ) : (
-                    selectedUserItems.map((item) => (
-                      <TouchableOpacity
-                        key={item.id}
-                        style={s.searchItemsRow}
-                        onPress={() => {
-                          setSelectedItem(item);
-                          setSelectedUser(null);
-                        }}
-                      >
-                        <Image
-                          source={{ uri: item.image }}
-                          style={s.searchItemImage}
-                        />
-                        <View style={s.searchItemContainer}>
-                          <Text style={s.searchItemName}>
-                            {item.name}
-                          </Text>
-                          <Text style={s.searchItemPrice}>
-                            ${item.price}
-                          </Text>
-                        </View>
-                      </TouchableOpacity>
-                    ))
-                  )}
-                </View>
-
-                {/* Close Button */}
-                <TouchableOpacity
-                  style={[s.btn, s.btnCancel]}
-                  onPress={() => setSelectedUser(null)}
-                >
-                  <Text style={s.btnCancelText}>Close</Text>
-                </TouchableOpacity>
-              </ScrollView>
-            )}
-          </View>
-        </View>
-      </Modal>
+      <ProfileModal
+        visible={selectedUser != null}
+        user={selectedUser}
+        items={selectedUserItems}
+        loading={userLoading}
+        currentUserId={currentUserId}
+        onClose={() => setSelectedUser(null)}
+        onSelectItem={(item) => {
+          setSelectedItem(item)
+          setSelectedUser(null)
+        }}
+        onViewProfile={(id) => {
+          setSelectedUser(null)
+          router.push(`/main/profile/${id}`)
+        }}
+      />
     </SafeAreaView>
-);
+  );
 }

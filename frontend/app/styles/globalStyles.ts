@@ -1,13 +1,6 @@
 import { StyleSheet } from "react-native"
+import { COLORS } from "./theme"
 
-/**
- * Global shared styles that can be used across all modules.
- * Module-specific styles should be in their respective stylesheets:
- * - styles/main/mainStyles.ts - for main app screens
- * - styles/register/registerStyles.ts - for registration flow
- * - styles/auth/authStyles.ts - for authentication screens
- * - styles/settings/settingsStyles.ts - for settings screens
- */
 export const globalStyles = StyleSheet.create({
   // Common layout utilities
   flex1: {
@@ -23,25 +16,61 @@ export const globalStyles = StyleSheet.create({
   column: {
     flexDirection: "column",
   },
+  rowBetween: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
   
   // Common spacing
-  paddingSmall: {
-    padding: 8,
+  paddingSmall: { padding: 8 },
+  paddingMedium: { padding: 16 },
+  paddingLarge: { padding: 24 },
+  
+  marginSmall: { margin: 8 },
+  marginMedium: { margin: 16 },
+  marginLarge: { margin: 24 },
+
+  gapSmall: { gap: 8 },
+  gapMedium: { gap: 12 },
+  gapLarge: { gap: 16 },
+
+  // Typography
+  title: {
+    fontSize: 22,
+    fontWeight: "600",
+    color: COLORS.text,
   },
-  paddingMedium: {
-    padding: 16,
+  subtitle: {
+    fontSize: 16,
+    color: COLORS.textMuted,
   },
-  paddingLarge: {
-    padding: 24,
+  text: {
+    fontSize: 14,
+    color: COLORS.text,
   },
   
-  marginSmall: {
-    margin: 8,
+  // Containers
+  safe: {
+    flex: 1,
+    backgroundColor: COLORS.background,
   },
-  marginMedium: {
-    margin: 16,
+  
+  // Forms
+  input: {
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 15,
+    backgroundColor: COLORS.white,
+    color: COLORS.text,
   },
-  marginLarge: {
-    margin: 24,
+  
+  // Panels
+  panel: {
+    backgroundColor: COLORS.white,
+    borderRadius: 8,
+    overflow: "hidden",
   },
 })

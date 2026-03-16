@@ -100,7 +100,7 @@ export const api = {
   get: <T>(path: string) => request<T>('GET', path),
   post: <T>(path: string, body: unknown) => request<T>('POST', path, body),
   delete: (path: string) => request<void>('DELETE', path),
-  
+  patch: <T>(path: string, body: unknown) => request<T>('PATCH', path, body),
   // Search endpoints
   search: {
     items: (q: string, communityId?: string, limit?: number) => {
@@ -120,5 +120,57 @@ export const api = {
       if (limit) path += `&limit=${limit}`;
       return request<SearchCommunityResult[]>('GET', path);
     },
+    
   },
+  // Add to your api object:
+    connections: {
+      list:       (q?: string) =>
+        api.get<ConnectionProfile[]>(`/connections${q ? `?q=${encodeURIComponent(q)}` : ''}`),
+      requests:   () =>
+        api.get<ConnectionProfile[]>('/connections/requests'),
+      status:     (userId: string) =>
+        api.get<{ status: ConnectionStatus }>(`/connections/status/${userId}`),
+      send:       (userId: string) =>
+        api.post<{ status: string }>(`/connections/${userId}`, {}),
+      respond: (userId: string, action: 'accept' | 'decline') =>
+        api.patch<{ status: string }>(`/connections/${userId}?action=${action}`, {}),
+      remove:     (userId: string) =>
+        api.delete(`/connections/${userId}`),
+    },
+    messages: {
+      list: () => api.get<ConversationOut[]>('/messages'),
+      get: (userId: string) => api.get<MessageOut[]>(`/messages/${userId}`),
+      send: (userId: string, content: string) => api.post<MessageOut>(`/messages/${userId}`, { content }),
+    },
 };
+
+export interface MessageOut {
+  id: string;
+  sender_id: string;
+  receiver_id: string;
+  content: string;
+  created_at: string;
+  is_read: boolean;
+}
+
+export interface ConversationOut {
+  other_user_id: string;
+  other_username: string;
+  profile_image_url: string;
+  latest_message: MessageOut;
+}
+
+export interface ConnectionProfile {
+  id: string;
+  username: string;
+  bio: string;
+  address: string;
+  profile_image_url: string;
+}
+
+export type ConnectionStatus = 
+  | 'none' 
+  | 'pending_sent' 
+  | 'pending_received' 
+  | 'accepted';
+

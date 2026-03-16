@@ -21,7 +21,7 @@ from pydantic import BaseModel
 from typing import Optional
 import uuid
 from app.db.session import get_db
-from app.db.models import Post, PostType, Item, ItemCategory, Profile
+from app.db.models import Post, PostType, Item, ItemCategory, Profile, Community
 from app.core.auth import get_current_user  # returns decoded Supabase JWT payload
 
 router = APIRouter()
@@ -31,7 +31,6 @@ router = APIRouter()
 
 
 def get_or_create_profile(user: dict, db: Session) -> Profile:
-    """Resolve Supabase user → Profile row (lazy-create if first login)."""
     email = user.get("email") or user.get("user_metadata", {}).get("email")
     if not email:
         raise HTTPException(status_code=400, detail="No email in token")
@@ -39,7 +38,6 @@ def get_or_create_profile(user: dict, db: Session) -> Profile:
     profile = db.query(Profile).filter(Profile.email == email).first()
     if not profile:
         username = email.split("@")[0]
-        # ensure username uniqueness
         existing = db.query(Profile).filter(Profile.username == username).first()
         if existing:
             username = f"{username}_{str(uuid.uuid4())[:6]}"
@@ -136,12 +134,25 @@ def list_posts(
     db: Session = Depends(get_db),
     user=Depends(get_current_user),
 ):
+    profile = get_or_create_profile(user, db)
     q = db.query(Post)
     if community_id and community_id != "undefined":
         try:
             q = q.filter(Post.community_id == uuid.UUID(community_id))
         except ValueError:
-            pass
+            # If invalid UUID provided for a specific community filter, return no results
+            return []
+    else:
+        # Show posts from user's communities OR general posts (no community)
+        community_ids = [c.id for c in profile.communities] if profile.communities else []
+        from sqlalchemy import or_
+        q = q.filter(
+            or_(
+                Post.community_id == None,          # general / home-screen posts
+                Post.community_id.in_(community_ids) if community_ids else False,
+            )
+        )
+            
     posts = q.order_by(Post.created_at.desc()).limit(100).all()
 
     results = []
@@ -167,6 +178,61 @@ def delete_post(
 
     db.delete(post)
     db.commit()
+
+
+@router.get("/profile/me")
+def get_my_profile(
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user),
+):
+    profile = get_or_create_profile(user, db)
+
+    # Get first community name and id from the relationship
+    community = profile.communities[0].name if profile.communities else ""
+    community_id = str(profile.communities[0].id) if profile.communities else None
+
+    return {
+        "id": str(profile.id),
+        "username": profile.username,
+        "email": profile.email,
+        "bio": profile.bio or "",
+        "address": profile.address or "",
+        "community": community,
+        "community_id": community_id,
+        "profile_image_url": profile.profile_image_url or "",
+    }
+
+
+@router.get("/profile/{user_id}")
+def get_user_profile(
+    user_id: str,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user),
+):
+    # Just to ensure the request is authenticated
+    get_or_create_profile(user, db)
+    
+    try:
+        target_uuid = uuid.UUID(user_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid user_id")
+        
+    target_profile = db.query(Profile).filter(Profile.id == target_uuid).first()
+    if not target_profile:
+        raise HTTPException(status_code=404, detail="Profile not found")
+
+    community = target_profile.communities[0].name if target_profile.communities else ""
+    community_id = str(target_profile.communities[0].id) if target_profile.communities else None
+
+    return {
+        "id": str(target_profile.id),
+        "username": target_profile.username,
+        "bio": target_profile.bio or "",
+        "address": target_profile.address or "",
+        "community": community,
+        "community_id": community_id,
+        "profile_image_url": target_profile.profile_image_url or "",
+    }
 
 
 # ─── ITEM routes ──────────────────────────────────────────────────────────────
@@ -203,7 +269,11 @@ def list_items(
     db: Session = Depends(get_db),
     user=Depends(get_current_user),
 ):
-    items = db.query(Item).order_by(Item.created_at.desc()).limit(200).all()
+    profile = get_or_create_profile(user, db)
+    q = db.query(Item)
+    
+    # Global marketplace - no community restriction
+    items = q.order_by(Item.created_at.desc()).limit(200).all()
     results = []
     for item in items:
         owner = db.query(Profile).filter(Profile.id == item.owner_id).first()
@@ -255,4 +325,34 @@ def _item_out(item: Item, owner: Optional[Profile]) -> dict:
         "owner_id": str(item.owner_id),
         "owner_username": owner.username if owner else "unknown",
         "created_at": item.created_at.isoformat() if item.created_at else "",
+    }
+
+
+# Add this new endpoint to get community details
+@router.get("/communities/{community_id}")
+def get_community(
+    community_id: str,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user),
+):
+    profile = get_or_create_profile(user, db)
+    try:
+        comm = (
+            db.query(Community).filter(Community.id == uuid.UUID(community_id)).first()
+        )
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid community_id")
+    if not comm:
+        raise HTTPException(status_code=404, detail="Community not found")
+    # Ensure user is a member
+    if profile.id not in [m.id for m in comm.members]:
+        raise HTTPException(
+            status_code=403, detail="You are not a member of this community"
+        )
+    return {
+        "id": str(comm.id),
+        "name": comm.name,
+        "description": comm.description or "",
+        "lake_name": comm.lake_name or "",
+        "member_count": len(comm.members) if comm.members else 0,
     }

@@ -65,11 +65,6 @@ export default function SettingsScreen() {
   const [community, setCommunity]       = useState('');
   const [communityId, setCommunityId]   = useState<string | null>(null);
 
-  // ── privacy / notifications (local state only – extend to backend as needed) ──
-  const [showEmail, setShowEmail]         = useState(true);
-  const [showPhone, setShowPhone]         = useState(true);
-  const [notifications, setNotifications] = useState(true);
-
   // ── modal control ──
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editingField, setEditingField]         = useState<
@@ -361,71 +356,11 @@ export default function SettingsScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* Privacy section */}
-          <View style={s.settingsSection}>
-            <Text style={s.settingsSectionTitle}>Privacy</Text>
-
-            <View style={s.settingsRow}>
-              <View style={s.settingsRowLeft}>
-                <Ionicons name="mail-outline" size={22} color="#666" />
-                <View style={s.settingsRowText}>
-                  <Text style={s.settingsRowLabel}>Show Email</Text>
-                  <Text style={s.settingsRowSubtext}>Allow others to see your email</Text>
-                </View>
-              </View>
-              <Switch value={showEmail} onValueChange={setShowEmail} trackColor={{ false: '#ddd', true: '#4F728C' }} />
-            </View>
-
-            <View style={s.settingsRow}>
-              <View style={s.settingsRowLeft}>
-                <Ionicons name="call-outline" size={22} color="#666" />
-                <View style={s.settingsRowText}>
-                  <Text style={s.settingsRowLabel}>Show Phone</Text>
-                  <Text style={s.settingsRowSubtext}>Allow others to see your phone</Text>
-                </View>
-              </View>
-              <Switch value={showPhone} onValueChange={setShowPhone} trackColor={{ false: '#ddd', true: '#4F728C' }} />
-            </View>
-          </View>
-
-          {/* Notifications section */}
-          <View style={s.settingsSection}>
-            <Text style={s.settingsSectionTitle}>Notifications</Text>
-
-            <View style={s.settingsRow}>
-              <View style={s.settingsRowLeft}>
-                <Ionicons name="notifications-outline" size={22} color="#666" />
-                <View style={s.settingsRowText}>
-                  <Text style={s.settingsRowLabel}>Push Notifications</Text>
-                  <Text style={s.settingsRowSubtext}>Receive notifications about activity</Text>
-                </View>
-              </View>
-              <Switch value={notifications} onValueChange={setNotifications} trackColor={{ false: '#ddd', true: '#4F728C' }} />
-            </View>
-          </View>
-
-          {/* Other section */}
           <View style={s.settingsSection}>
             <TouchableOpacity style={s.settingsRow} onPress={() => router.push('/main/profile')}>
               <View style={s.settingsRowLeft}>
                 <Ionicons name="person-circle-outline" size={22} color="#666" />
                 <Text style={s.settingsRowLabel}>View Profile</Text>
-              </View>
-              <Ionicons name="chevron-forward" size={20} color="#999" />
-            </TouchableOpacity>
-
-            <TouchableOpacity style={s.settingsRow}>
-              <View style={s.settingsRowLeft}>
-                <Ionicons name="help-circle-outline" size={22} color="#666" />
-                <Text style={s.settingsRowLabel}>Help & Support</Text>
-              </View>
-              <Ionicons name="chevron-forward" size={20} color="#999" />
-            </TouchableOpacity>
-
-            <TouchableOpacity style={s.settingsRow}>
-              <View style={s.settingsRowLeft}>
-                <Ionicons name="information-circle-outline" size={22} color="#666" />
-                <Text style={s.settingsRowLabel}>About</Text>
               </View>
               <Ionicons name="chevron-forward" size={20} color="#999" />
             </TouchableOpacity>

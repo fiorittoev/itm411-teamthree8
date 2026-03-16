@@ -1,46 +1,7 @@
 import { StyleSheet, Dimensions } from "react-native"
 
-const { width, height } = Dimensions.get('window')
-
-// ─── Responsive Breakpoints ──────────────────────────────────────────────────
-const isSmallPhone = width < 375
-const isPhone = width < 768
-const isTablet = width >= 768
-
-// ─── Scaling Functions ───────────────────────────────────────────────────────
-const scale = (size: number) => {
-  if (isSmallPhone) return size * 0.85
-  if (isTablet) return size * 1.15
-  return size
-}
-
-const scaleHeight = (size: number) => {
-  if (isSmallPhone) return size * 0.8
-  if (isTablet) return size * 1.1
-  return size
-}
-
-export const COLORS = {
-  primary: "#476E8D",
-  secondary: "#9CB2C3",
-  offWhite: "#FFF6F6",
-  black: "#000000",
-  background: "#FEFDFF",
-  border: "#E4E8ED",
-  success: "#2e7d32",
-  error: "#e53935",
-  mutedText: "#6b7280",
-  blue: "#1976d2",
-  orange: "#e65100",
-  darkOrange: "#bf360c",
-  lightBlue: "#e3f2fd",
-  lightGray: "#f5f5f5",
-  gray: "#aaa",
-  darkGray: "#555",
-  darkerGray: "#333",
-  lightestGray: "#f0f0f0",
-  white: "#ffffff",
-}
+import { COLORS, isSmallPhone, isPhone, isTablet, scale, scaleHeight } from "../theme"
+export { COLORS, isSmallPhone, isPhone, isTablet, scale, scaleHeight }
 
 export const registerStyles = StyleSheet.create({
   // ===== Layout =====

@@ -3,12 +3,12 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  ActivityIndicator,
 } from "react-native"
 import { useEffect, useState } from "react"
 import { useRouter } from "expo-router"
 import { authStyles as s } from "./styles/auth/authStyles"
 import { supabase } from "../services/supabase"
+import { Button } from "./components/ui/Button"
 
 export default function LoginScreen() {
   const router = useRouter()
@@ -83,20 +83,14 @@ export default function LoginScreen() {
         </Text>
       )}
 
-      {loading ? (
-        <ActivityIndicator style={s.loadingContainer} />
-      ) : (
-        <TouchableOpacity
-          style={[
-            s.button,
-            !isValid && s.buttonDisabled,
-          ]}
-          onPress={handleLogin}
-          disabled={!isValid}
-        >
-          <Text style={s.buttonText}>Login</Text>
-        </TouchableOpacity>
-      )}
+      <View style={{ marginBottom: 15 }}>
+        <Button 
+          title="Login" 
+          onPress={handleLogin} 
+          disabled={!isValid} 
+          loading={loading} 
+        />
+      </View>
 
       {message && (
         <Text style={s.messageText}>

@@ -8,6 +8,7 @@ export const COLORS = {
   black: "#000000",
   error: "#e53935",
   mutedText: "#666666",
+  border: "#dddddd"
 }
 
 export const authStyles = StyleSheet.create({
@@ -31,20 +32,6 @@ export const authStyles = StyleSheet.create({
     fontSize: 16,
     
     marginBottom: 20,
-  },
-  button: {
-    backgroundColor: "#1e3a5f",
-    padding: 15,
-    borderRadius: 8,
-    marginBottom: 15,
-    alignItems: "center",
-  },
-  buttonDisabled: {
-    opacity: 0.5,
-  },
-  buttonText: {
-    color: COLORS.white,
-    fontWeight: "600",
   },
   field: {
     borderWidth: 1,

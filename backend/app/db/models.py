@@ -9,6 +9,7 @@ from sqlalchemy import (
     Enum,
     func,
     text,
+    Boolean,
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
@@ -20,7 +21,6 @@ import enum
 # ---------------------------
 # Association Tables
 # ---------------------------
-
 profile_community = Table(
     "profile_community",
     Base.metadata,
@@ -45,6 +45,20 @@ profile_interest = Table(
     Column(
         "interest_id", UUID(as_uuid=True), ForeignKey("interests.id"), primary_key=True
     ),
+)
+
+# Add to association tables section
+connections = Table(
+    "connections",
+    Base.metadata,
+    Column(
+        "requester_id", UUID(as_uuid=True), ForeignKey("profiles.id"), primary_key=True
+    ),
+    Column(
+        "requestee_id", UUID(as_uuid=True), ForeignKey("profiles.id"), primary_key=True
+    ),
+    Column("status", String, default="pending"),  # "pending" | "accepted" | "declined"
+    Column("created_at", TIMESTAMP(timezone=True), server_default=func.now()),
 )
 
 # ---------------------------
@@ -76,6 +90,14 @@ class Profile(Base):
     )
     posts = relationship("Post", back_populates="author")
     items = relationship("Item", back_populates="owner")
+
+    sent_requests = relationship(
+        "Profile",
+        secondary=connections,
+        primaryjoin=id == connections.c.requester_id,
+        secondaryjoin=id == connections.c.requestee_id,
+        backref="received_requests",
+    )
 
 
 class Community(Base):
@@ -160,5 +182,24 @@ class Item(Base):
     description = Column(Text)
     image = Column(Text)
     category = Column(Enum(ItemCategory), default=ItemCategory.OTHER)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
     owner = relationship("Profile", back_populates="items")
+
+
+class Message(Base):
+    __tablename__ = "messages"
+
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        server_default=text("gen_random_uuid()"),
+    )
+    sender_id = Column(UUID(as_uuid=True), ForeignKey("profiles.id"), nullable=False)
+    receiver_id = Column(UUID(as_uuid=True), ForeignKey("profiles.id"), nullable=False)
+    content = Column(Text, nullable=False)
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    is_read = Column(Boolean, default=False)
+
+    sender = relationship("Profile", foreign_keys=[sender_id], backref="sent_messages")
+    receiver = relationship("Profile", foreign_keys=[receiver_id], backref="received_messages")

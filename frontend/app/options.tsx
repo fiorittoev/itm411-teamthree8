@@ -1,6 +1,7 @@
-import { View, Text, TouchableOpacity } from "react-native"
+import { View, Text } from "react-native"
 import { authStyles as s } from "./styles/auth/authStyles"
 import { useRouter } from "expo-router"
+import { Button } from "./components/ui/Button"
 
 
 export default function Options() {
@@ -10,26 +11,11 @@ export default function Options() {
     <View style={s.container}>
       <Text style={s.title}>Welcome!</Text>
 
-      <TouchableOpacity
-        style={s.button}
-        onPress={() => router.push("/login")}
-      >
-        <Text style={s.buttonText}>Login</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={s.button}
-        onPress={() => router.push("/register")}
-      >
-        <Text style={s.buttonText}>Register</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={s.button}
-        onPress={() => router.replace("/main")}
-      >
-        <Text style={s.buttonText}>Guest</Text>
-      </TouchableOpacity>
+      <View style={{ gap: 15 }}>
+        <Button title="Login" onPress={() => router.push("/login")} />
+        <Button title="Register" onPress={() => router.push("/register")} />
+        <Button title="Guest" onPress={() => router.replace("/main")} variant="secondary" />
+      </View>
     </View>
   )
 }

@@ -32,22 +32,6 @@ export default function ReviewStep() {
           </View>
         </View>
       )}
-
-        {(data.items ?? []).length > 0 && (
-    <View style={s.reviewSection}>
-      <Text style={[s.reviewSectionTitle, { marginBottom: 6 }]}>Items</Text>
-      {data.items.map((item, i) => (
-        <View key={i} style={s.reviewItemCard}>
-          <Text style={s.reviewItemName}>{item.name}
-            <Text style={s.categorySubtext}> · {item.category}</Text>
-          </Text>
-          {!!item.description && (
-            <Text style={s.reviewItemDescription}>{item.description}</Text>
-          )}
-        </View>
-      ))}
-    </View>
-  )}
     </View>
   )
 }

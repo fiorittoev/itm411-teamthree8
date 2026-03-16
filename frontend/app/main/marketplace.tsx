@@ -10,39 +10,14 @@ import {
   Image, Dimensions, KeyboardAvoidingView, Platform,
   SafeAreaView, Alert, ActivityIndicator, RefreshControl, ScrollView,
 } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { api, ItemOut } from '../../services/api';
 import { supabase } from '../../services/supabase';
 import { mainStyles as s } from '../styles/main/mainStyles';
-
+import { MarketCard } from '../components/main';
 type Filter = 'all' | 'yours' | 'favorites';
-
-// ─── MarketCard ───────────────────────────────────────────────────────────────
-
-function MarketCard({ item, isFav, onPress, onToggleFav }: {
-  item: ItemOut; isFav: boolean;
-  onPress: () => void; onToggleFav: () => void;
-}) {
-  return (
-    <TouchableOpacity style={s.card} onPress={onPress} activeOpacity={0.85}>
-      <Image source={{ uri: item.image }} style={s.cardImg} />
-      <View style={s.cardInfo}>
-        <View style={s.cardText}>
-          <Text style={s.cardName} numberOfLines={2}>{item.name}</Text>
-          <Text style={s.cardPrice}>${item.price}</Text>
-        </View>
-        <TouchableOpacity
-          onPress={e => { e.stopPropagation?.(); onToggleFav(); }}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-        >
-          <Text style={s.cardFav}>{isFav ? '♥' : '♡'}</Text>
-        </TouchableOpacity>
-      </View>
-    </TouchableOpacity>
-  );
-}
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
@@ -98,7 +73,14 @@ export default function MarketplaceScreen() {
       const fetched = await api.get<ItemOut[]>('/items');
       setItems(fetched);
       const { data } = await supabase.auth.getUser();
-      if (data.user) setCurrentAuthorId(data.user.id);
+      if (data.user) {
+        try {
+          const profile = await api.get<{id: string}>('/profile/me');
+          setCurrentAuthorId(profile.id);
+        } catch (e) {
+          console.warn('Could not fetch profile in marketplace', e);
+        }
+      }
     } catch (e: any) {
       Alert.alert('Error', e.message ?? 'Failed to load items');
     } finally {
@@ -217,6 +199,7 @@ export default function MarketplaceScreen() {
   });
 
   // ── Render ────────────────────────────────────────────────────────────────
+  const router = useRouter();
 
   if (loading) {
     return (
@@ -361,6 +344,19 @@ export default function MarketplaceScreen() {
                   <Text style={s.detailName}>{detailItem.name}</Text>
                   <Text style={s.detailPrice}>${detailItem.price}</Text>
                   <Text style={s.detailSeller}>Posted by: {detailItem.owner_username}</Text>
+                  
+                  {detailItem.owner_id !== currentAuthorId && (
+                    <TouchableOpacity
+                      style={[s.btn, s.btnBlue]}
+                      onPress={() => {
+                        setDetailItem(null);
+                        router.push(`/main/profile/${detailItem.owner_id}`);
+                      }}
+                    >
+                      <Text style={s.btnText}>View Seller Profile</Text>
+                    </TouchableOpacity>
+                  )}
+
                   <Text style={s.detailDesc}>{detailItem.description}</Text>
                   <TouchableOpacity style={s.favBtn} onPress={() => toggleFav(detailItem.id)}>
                     <Text style={s.favBtnText}>

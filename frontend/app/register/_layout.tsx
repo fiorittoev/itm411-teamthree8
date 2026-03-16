@@ -11,7 +11,6 @@ const steps = [
   "/register/display-name",
   "/register/about",
   "/register/interests",
-  "/register/items",
   "/register/review",
   "/register/end"
 ] as const
@@ -61,7 +60,6 @@ function RegisterContent() {
           address: data.address,
           community: data.community,
           bio: data.bio,
-          items: data.items ?? [],
         }),
       }).then(async res => {
         if (!res.ok) {
@@ -99,7 +97,7 @@ function RegisterContent() {
 
   return (
     <View style={s.container}>
-      {currentStep !== 7 && (
+      {currentStep !== steps.length - 1 && (
         <TouchableOpacity onPress={() => router.back()}>
           <Text style={s.backButton}>← Back</Text>
         </TouchableOpacity>

@@ -88,6 +88,21 @@ class SearchCommunityResult:
         }
 
 
+def get_user_community_ids(profile: Profile) -> list[uuid.UUID]:
+    """Returns list of community UUIDs the user belongs to."""
+    return [c.id for c in profile.communities] if profile.communities else []
+
+
+def get_or_create_profile_by_email(user: dict, db: Session) -> Profile:
+    email = user.get("email") or user.get("user_metadata", {}).get("email")
+    if not email:
+        raise HTTPException(status_code=400, detail="No email in token")
+    profile = db.query(Profile).filter(Profile.email == email).first()
+    if not profile:
+        raise HTTPException(status_code=404, detail="Profile not found")
+    return profile
+
+
 @router.get("/items")
 def search_items(
     q: str = Query("", min_length=0),
@@ -96,35 +111,38 @@ def search_items(
     db: Session = Depends(get_db),
     user=Depends(get_current_user),
 ):
-    """Search marketplace items by name or description."""
+    profile = get_or_create_profile_by_email(user, db)
     query = db.query(Item)
 
-    # Filter by search query (name or description) if provided
     if q and q.strip():
-        search_filter = or_(
-            func.lower(Item.name).ilike(f"%{q.lower()}%"),
-            func.lower(Item.description).ilike(f"%{q.lower()}%"),
+        query = query.filter(
+            or_(
+                func.lower(Item.name).ilike(f"%{q.lower()}%"),
+                func.lower(Item.description).ilike(f"%{q.lower()}%"),
+            )
         )
-        query = query.filter(search_filter)
 
-    # Optionally filter by community (through owner)
     if community_id and community_id != "undefined":
+        # ── Community screen: single community, verify membership ──
         try:
             comm_uuid = uuid.UUID(community_id)
-            query = query.join(Profile).filter(
+            comm = db.query(Community).filter(Community.id == comm_uuid).first()
+            if not comm or profile.id not in [m.id for m in comm.members]:
+                raise HTTPException(
+                    status_code=403, detail="Not a member of this community"
+                )
+            query = query.join(Profile, Profile.id == Item.owner_id).filter(
                 Profile.communities.any(Community.id == comm_uuid)
             )
-        except ValueError:
-            pass
+        except (ValueError, TypeError):
+            return []
+    # No restriction for global search (outside of specific community screen)
 
     results = query.order_by(Item.created_at.desc()).limit(limit).all()
-
     output = []
     for item in results:
         owner = db.query(Profile).filter(Profile.id == item.owner_id).first()
-        result = SearchItemResult(item, owner)
-        output.append(result.to_dict())
-
+        output.append(SearchItemResult(item, owner).to_dict())
     return output
 
 
@@ -136,58 +154,63 @@ def search_users(
     db: Session = Depends(get_db),
     user=Depends(get_current_user),
 ):
-    """Search user profiles by username or bio."""
+    profile = get_or_create_profile_by_email(user, db)
     query = db.query(Profile)
 
-    # Filter by search query (username or bio) if provided
-    if q and q.strip():
-        search_filter = or_(
-            func.lower(Profile.username).ilike(f"%{q.lower()}%"),
-            func.lower(Profile.bio).ilike(f"%{q.lower()}%"),
-        )
-        query = query.filter(search_filter)
+    # Only filter out self if NOT searching within a specific community members list
+    if not community_id:
+        query = query.filter(Profile.id != profile.id)
 
-    # Optionally filter by community
+    if q and q.strip():
+        query = query.filter(
+            or_(
+                func.lower(Profile.username).ilike(f"%{q.lower()}%"),
+                func.lower(Profile.bio).ilike(f"%{q.lower()}%"),
+            )
+        )
+
     if community_id and community_id != "undefined":
+        # ── Community screen: single community, verify membership ──
         try:
             comm_uuid = uuid.UUID(community_id)
+            comm = db.query(Community).filter(Community.id == comm_uuid).first()
+            if not comm or profile not in comm.members:
+                raise HTTPException(
+                    status_code=403, detail="Not a member of this community"
+                )
             query = query.filter(Profile.communities.any(Community.id == comm_uuid))
-        except ValueError:
-            pass
+        except (ValueError, TypeError):
+            return []
+    # No restriction for global search
 
     results = query.limit(limit).all()
-
-    output = []
-    for profile in results:
-        result = SearchUserResult(profile)
-        output.append(result.to_dict())
-
-    return output
+    return [SearchUserResult(p).to_dict() for p in results]
 
 
 @router.get("/communities")
 def search_communities(
-    q: str = Query(..., min_length=1),
+    q: str = Query("", min_length=0),
     limit: int = Query(50, ge=1, le=100),
     db: Session = Depends(get_db),
     user=Depends(get_current_user),
 ):
-    """Search communities by name, description, or lake_name."""
+    profile = get_or_create_profile_by_email(user, db)
+    community_ids = get_user_community_ids(profile)
+
     query = db.query(Community)
 
-    # Filter by search query
-    search_filter = or_(
-        func.lower(Community.name).ilike(f"%{q.lower()}%"),
-        func.lower(Community.description).ilike(f"%{q.lower()}%"),
-        func.lower(Community.lake_name).ilike(f"%{q.lower()}%"),
-    )
-    query = query.filter(search_filter)
+    # Show all communities matching search or all if no search string
+    # (Optional: keep restriction if we only want users to find communities they can join?)
+    # The user wants "anything outside of community" to show up.
+
+    if q and q.strip():
+        query = query.filter(
+            or_(
+                func.lower(Community.name).ilike(f"%{q.lower()}%"),
+                func.lower(Community.lake_name).ilike(f"%{q.lower()}%"),
+                func.lower(Community.description).ilike(f"%{q.lower()}%"),
+            )
+        )
 
     results = query.limit(limit).all()
-
-    output = []
-    for community in results:
-        result = SearchCommunityResult(community)
-        output.append(result.to_dict())
-
-    return output
+    return [SearchCommunityResult(c).to_dict() for c in results]

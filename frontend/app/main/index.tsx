@@ -1,56 +1,17 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  View, Text, TouchableOpacity, FlatList, Modal, TextInput,
-  Image, KeyboardAvoidingView, Platform, SafeAreaView,
-  Alert, ActivityIndicator, RefreshControl,
+  View, Text, TouchableOpacity, FlatList,
+  SafeAreaView,
+  Alert,RefreshControl,Modal
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { api, PostOut, ItemOut } from '../../services/api';
 import { supabase } from '../../services/supabase';
 import { mainStyles as s } from '../styles/main/mainStyles';
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-function formatTime(iso: string) {
-  return new Date(iso).toLocaleString('en-US', {
-    hour: 'numeric', minute: '2-digit', hour12: true, month: 'short', day: 'numeric',
-  });
-}
-
-// ─── PostCard ─────────────────────────────────────────────────────────────────
-function PostCard({ post, currentAuthorId, onDelete }: {
-  post: PostOut;
-  currentAuthorId: string | null;
-  onDelete: (id: string) => void;
-}) {
-  return (
-    <View style={s.postBox}>
-      <View style={s.postHeader}>
-        <Text style={s.postAuthor}>{post.author_username}</Text>
-        <Text style={s.postTime}>{formatTime(post.created_at)}</Text>
-      </View>
-      <Text style={s.postText}>{post.content}</Text>
-      {currentAuthorId === post.author_id && (
-        <TouchableOpacity style={s.deleteBtn} onPress={() => onDelete(post.id)}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-          <Ionicons name="trash-outline" size={18} color="#666" />
-        </TouchableOpacity>
-      )}
-    </View>
-  );
-}
-
-// ─── ListingCard ──────────────────────────────────────────────────────────────
-function ListingCard({ item, onPress }: { item: ItemOut; onPress: () => void }) {
-  return (
-    <TouchableOpacity style={s.listingCard} onPress={onPress} activeOpacity={0.85}>
-      <Image source={{ uri: item.image }} style={s.previewImg} />
-      <View style={s.previewPrice}>
-        <Text style={s.previewPriceText}>${item.price}</Text>
-      </View>
-    </TouchableOpacity>
-  );
-}
+import { PostCard, ListingCard, Loading, PostModal, DeleteConfirmModal } from '../components/main';
+import { ConnectionsPanel } from '../components/ConnectionsPanel';
+import { MessagesPanel } from '../components/MessagesPanel';
 
 // ─── HomeScreen ───────────────────────────────────────────────────────────────
 export default function HomeScreen() {
@@ -61,22 +22,20 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [currentAuthorId, setCurrentAuthorId] = useState<string | null>(null);
-
   const [postModalVisible, setPostModalVisible] = useState(false);
-  const [postContent, setPostContent] = useState('');
-  const [posting, setPosting] = useState(false);
-
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
-  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
-  const [deleting, setDeleting] = useState(false);
-
+  const [deleteTargetId, setDeleteTargetId] = useState<string>("");
+  const [showConnections, setShowConnections] = useState(false);
+  const [showMessages, setShowMessages] = useState(false);
+  const [initialDMId, setInitialDMId] = useState<string | null>(null);
+  const [initialDMName, setInitialDMName] = useState<string>('');
   // ── Load ─────────────────────────────────────────────────────────────────────
   useEffect(() => { fetchAll(); }, []);
 
-  const fetchAll = async () => {
-    setLoading(true);
+  const fetchAll = async (isRefresh = false) => {
+    if (!isRefresh && !refreshing) setLoading(true);
     try {
-      // ✅ API calls automatically include JWT now
+      // API calls automatically include JWT now
       const [fetchedPosts, fetchedItems] = await Promise.all([
         api.get<PostOut[]>('/posts'),
         api.get<ItemOut[]>('/items'),
@@ -86,8 +45,14 @@ export default function HomeScreen() {
 
       // Determine current user's author_id
       const { data } = await supabase.auth.getUser();
-      if (data.user) 
-        setCurrentAuthorId(data.user.id);
+      if (data.user) {
+        try {
+          const profile = await api.get<{id: string}>('/profile/me');
+          setCurrentAuthorId(profile.id);
+        } catch (e) {
+          console.warn('Could not fetch profile', e);
+        }
+      }
     } catch (e: any) {
       Alert.alert('Error', e.message ?? 'Failed to load');
     } finally {
@@ -98,61 +63,23 @@ export default function HomeScreen() {
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    fetchAll();
+    fetchAll(true);
   }, []);
-
-  // ── Post CRUD ─────────────────────────────────────────────────────────────────
-  const submitPost = async () => {
-    const content = postContent.trim();
-    if (!content) return;
-    setPosting(true);
-    try {
-      const newPost = await api.post<PostOut>('/posts', {
-        title: content.slice(0, 80),
-        content,
-        post_type: 'general',
-      });
-      setPosts(prev => [newPost, ...prev]);
-      if (!currentAuthorId) setCurrentAuthorId(newPost.author_id);
-      setPostContent('');
-      setPostModalVisible(false);
-    } catch (e: any) {
-      Alert.alert('Error', e.message ?? 'Failed to post');
-    } finally {
-      setPosting(false);
-    }
-  };
 
   const promptDelete = (id: string) => {
     setDeleteTargetId(id);
     setDeleteModalVisible(true);
-  };
-
-  const confirmDelete = async () => {
-    if (!deleteTargetId) return;
-    setDeleting(true);
-    try {
-      await api.delete(`/posts/${deleteTargetId}`);
-      setPosts(prev => prev.filter(p => p.id !== deleteTargetId));
-      setDeleteModalVisible(false);
-    } catch (e: any) {
-      Alert.alert('Error', e.message ?? 'Failed to delete');
-    } finally {
-      setDeleting(false);
-      setDeleteTargetId(null);
-    }
-  };
+  }
 
   // ── Render ────────────────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <SafeAreaView style={[s.safe, s.centered]}>
-        <ActivityIndicator size="large" color="#4F728C" />
-      </SafeAreaView>
+      <Loading/>
     );
   }
 
   const preview = items.slice(0, 8);
+  
 
   return (
     <SafeAreaView style={s.safe}>
@@ -202,53 +129,55 @@ export default function HomeScreen() {
 
         {/* RIGHT */}
         <View style={s.rightPanel}>
-          <TouchableOpacity style={s.sideItem}>
+          <TouchableOpacity style={s.sideItem} onPress={() => setShowConnections(true)}>
             <Ionicons name="people-outline" size={34} color="#333" />
             <Text style={s.sideLabel}>Friends</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={s.sideItem}>
+
+          <Modal visible={showConnections} animationType="slide" transparent>
+            <View style={s.connectionsOverlay}>
+              <ConnectionsPanel 
+                onClose={() => setShowConnections(false)} 
+                onMessage={(userId, username) => {
+                  setShowConnections(false);
+                  setInitialDMId(userId);
+                  setInitialDMName(username);
+                  setShowMessages(true);
+                }}
+              />
+            </View>
+          </Modal>
+
+          <TouchableOpacity style={s.sideItem} onPress={() => { setInitialDMId(null); setInitialDMName(''); setShowMessages(true); }}>
             <Ionicons name="mail-outline" size={34} color="#333" />
             <Text style={s.sideLabel}>Mail</Text>
           </TouchableOpacity>
+
+          <Modal visible={showMessages} animationType="slide" transparent>
+            <View style={s.connectionsOverlay}>
+              <MessagesPanel 
+                onClose={() => { setShowMessages(false); setInitialDMId(null); setInitialDMName(''); }} 
+                currentUserId={currentAuthorId} 
+                initialChatId={initialDMId}
+                initialChatName={initialDMName}
+              />
+            </View>
+          </Modal>
         </View>
       </View>
 
-      {/* CREATE POST MODAL */}
-      <Modal visible={postModalVisible} transparent animationType="fade">
-        <KeyboardAvoidingView style={s.overlay} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-          <View style={s.modalBox}>
-            <Text style={s.modalTitle}>Create Post</Text>
-            <TextInput style={s.postInput} placeholder="What's happening at the lake?"
-              multiline numberOfLines={4} value={postContent} onChangeText={setPostContent} autoFocus />
-            <View style={s.modalActions}>
-              <TouchableOpacity style={[s.btn, s.btnCancel]}
-                onPress={() => { setPostModalVisible(false); setPostContent(''); }}>
-                <Text style={s.btnCancelText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[s.btn, s.btnBlue]} onPress={submitPost} disabled={posting}>
-                {posting ? <ActivityIndicator color="white" /> : <Text style={s.btnText}>Post</Text>}
-              </TouchableOpacity>
-            </View>
-          </View>
-        </KeyboardAvoidingView>
-      </Modal>
+      <PostModal
+        visible={postModalVisible}
+        onClose={() => setPostModalVisible(false)}
+        onPosted={fetchAll}
+      />
 
-      {/* DELETE CONFIRM */}
-      <Modal visible={deleteModalVisible} transparent animationType="fade">
-        <View style={s.overlay}>
-          <View style={s.modalBox}>
-            <Text style={s.modalTitle}>Delete this post?</Text>
-            <View style={s.modalActions}>
-              <TouchableOpacity style={[s.btn, s.btnCancel]} onPress={() => setDeleteModalVisible(false)}>
-                <Text style={s.btnCancelText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[s.btn, s.btnRed]} onPress={confirmDelete} disabled={deleting}>
-                {deleting ? <ActivityIndicator color="white" /> : <Text style={s.btnText}>Confirm</Text>}
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
+      <DeleteConfirmModal
+        visible={deleteModalVisible}
+        id={deleteTargetId}
+        onClose={() => setDeleteModalVisible(false)}
+        onDeleted={fetchAll}
+      />
     </SafeAreaView>
   );
 }
