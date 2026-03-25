@@ -66,6 +66,8 @@ class PostOut(BaseModel):
     created_at: str
     author_id: str
     author_username: str
+    author_is_business: bool = False
+    author_business_name: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -88,6 +90,8 @@ class ItemOut(BaseModel):
     image: str
     owner_id: str
     owner_username: str
+    owner_is_business: bool = False
+    owner_business_name: Optional[str] = None
     created_at: str
 
     class Config:
@@ -131,27 +135,27 @@ def create_post(
 @router.get("/posts", response_model=list[PostOut])
 def list_posts(
     community_id: Optional[str] = None,
+    user_id: Optional[str] = None,
     db: Session = Depends(get_db),
     user=Depends(get_current_user),
 ):
     profile = get_or_create_profile(user, db)
     q = db.query(Post)
-    if community_id and community_id != "undefined":
+
+    if user_id:
+        try:
+            q = q.filter(Post.author_id == uuid.UUID(user_id))
+        except ValueError:
+            return []
+    elif community_id and community_id != "undefined":
         try:
             q = q.filter(Post.community_id == uuid.UUID(community_id))
         except ValueError:
             # If invalid UUID provided for a specific community filter, return no results
             return []
     else:
-        # Show posts from user's communities OR general posts (no community)
-        community_ids = [c.id for c in profile.communities] if profile.communities else []
-        from sqlalchemy import or_
-        q = q.filter(
-            or_(
-                Post.community_id == None,          # general / home-screen posts
-                Post.community_id.in_(community_ids) if community_ids else False,
-            )
-        )
+        # Global feed: show all posts from all communities by default
+        pass
             
     posts = q.order_by(Post.created_at.desc()).limit(100).all()
 
@@ -180,6 +184,51 @@ def delete_post(
     db.commit()
 
 
+class ProfileUpdate(BaseModel):
+    username: Optional[str] = None
+    bio: Optional[str] = None
+    address: Optional[str] = None
+    community_id: Optional[str] = None
+    profile_image_url: Optional[str] = None
+    is_business: Optional[bool] = None
+    business_name: Optional[str] = None
+
+
+@router.patch("/profile/me")
+def update_my_profile(
+    body: ProfileUpdate,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user),
+):
+    profile = get_or_create_profile(user, db)
+
+    if body.username is not None:
+        profile.username = body.username
+    if body.bio is not None:
+        profile.bio = body.bio
+    if body.address is not None:
+        profile.address = body.address
+    if body.profile_image_url is not None:
+        profile.profile_image_url = body.profile_image_url
+    if body.is_business is not None:
+        profile.is_business = body.is_business
+    if body.business_name is not None:
+        profile.business_name = body.business_name
+        
+    if body.community_id is not None:
+        try:
+            comm_uuid = uuid.UUID(body.community_id)
+            community = db.query(Community).filter(Community.id == comm_uuid).first()
+            if community:
+                profile.communities = [community]
+        except ValueError:
+            pass
+
+    db.commit()
+    db.refresh(profile)
+    return {"status": "success"}
+
+
 @router.get("/profile/me")
 def get_my_profile(
     db: Session = Depends(get_db),
@@ -200,6 +249,8 @@ def get_my_profile(
         "community": community,
         "community_id": community_id,
         "profile_image_url": profile.profile_image_url or "",
+        "is_business": profile.is_business or False,
+        "business_name": profile.business_name or "",
     }
 
 
@@ -232,6 +283,8 @@ def get_user_profile(
         "community": community,
         "community_id": community_id,
         "profile_image_url": target_profile.profile_image_url or "",
+        "is_business": target_profile.is_business or False,
+        "business_name": target_profile.business_name or "",
     }
 
 
@@ -311,6 +364,9 @@ def _post_out(post: Post, author: Optional[Profile]) -> dict:
         "created_at": post.created_at.isoformat() if post.created_at else "",
         "author_id": str(post.author_id),
         "author_username": author.username if author else "unknown",
+        "author_is_business": author.is_business if author else False,
+        "author_business_name": author.business_name if author else None,
+        "author_profile_image_url": author.profile_image_url if author else None,
     }
 
 
@@ -324,6 +380,9 @@ def _item_out(item: Item, owner: Optional[Profile]) -> dict:
         "image": item.image or "",
         "owner_id": str(item.owner_id),
         "owner_username": owner.username if owner else "unknown",
+        "owner_is_business": owner.is_business if owner else False,
+        "owner_business_name": owner.business_name if owner else None,
+        "owner_profile_image_url": owner.profile_image_url if owner else None,
         "created_at": item.created_at.isoformat() if item.created_at else "",
     }
 

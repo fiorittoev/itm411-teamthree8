@@ -7,11 +7,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, TouchableOpacity, ScrollView, TextInput, Modal,
-  SafeAreaView, ActivityIndicator, Alert, Switch,
+  SafeAreaView, ActivityIndicator, Alert, Switch, Image,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../services/supabase';
+import * as ImagePicker from 'expo-image-picker';
 import { mainStyles as s } from '../styles/main/mainStyles';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -68,8 +69,13 @@ export default function SettingsScreen() {
   // ── modal control ──
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editingField, setEditingField]         = useState<
-    'username' | 'bio' | 'address' | null
+    'username' | 'bio' | 'address' | 'account' | 'picture' | null
   >(null);
+
+  // -- business & picture state --
+  const [isBusiness, setIsBusiness]     = useState(false);
+  const [businessName, setBusinessName] = useState('');
+  const [profileImageUrl, setProfileImageUrl] = useState('');
 
   // ── address-flow state (mirrors LocationStep) ──
   const [addrComponents, setAddrComponents] = useState<AddressComponents>({
@@ -101,6 +107,9 @@ export default function SettingsScreen() {
       setAddress(data.address    ?? '');
       setCommunity(data.community ?? '');
       setCommunityId(data.community_id ?? null);
+      setIsBusiness(data.is_business ?? false);
+      setBusinessName(data.business_name ?? '');
+      setProfileImageUrl(data.profile_image_url ?? '');
     } catch (e: any) {
       Alert.alert('Error', e.message ?? 'Failed to load settings');
     } finally {
@@ -114,9 +123,15 @@ export default function SettingsScreen() {
     setSaving(true);
     try {
       const headers = await getAuthHeaders();
-      const payload =
-        editingField === 'username' ? { username } :
-        editingField === 'bio'      ? { bio }      : {};
+      let payload: any = {};
+      
+      if (editingField === 'username') payload.username = username;
+      else if (editingField === 'bio') payload.bio = bio;
+      else if (editingField === 'account') {
+        payload.is_business = isBusiness;
+        payload.business_name = businessName;
+      }
+      else if (editingField === 'picture') payload.profile_image_url = profileImageUrl;
 
       const res = await fetch(`${API_URL}/profile/me`, {
         method: 'PATCH',
@@ -127,10 +142,33 @@ export default function SettingsScreen() {
 
       Alert.alert('Success', 'Profile updated');
       setEditModalVisible(false);
+      fetchProfile();
     } catch (e: any) {
       Alert.alert('Error', e.message ?? 'Failed to save');
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function pickImage() {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission needed', 'Sorry, we need camera roll permissions to make this work!');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.5,
+      base64: true,
+    });
+
+    if (!result.canceled && result.assets && result.assets[0]) {
+      const asset = result.assets[0];
+      const base64Image = `data:image/jpeg;base64,${asset.base64}`;
+      setProfileImageUrl(base64Image);
     }
   }
 
@@ -278,7 +316,7 @@ export default function SettingsScreen() {
 
   // ─── Open modal ───────────────────────────────────────────────────────────
 
-  function openEdit(field: 'username' | 'bio' | 'address') {
+  function openEdit(field: 'username' | 'bio' | 'address' | 'account' | 'picture') {
     setEditingField(field);
     if (field === 'address') resetAddressFlow();
     setEditModalVisible(true);
@@ -322,6 +360,42 @@ export default function SettingsScreen() {
                 <View style={s.settingsRowText}>
                   <Text style={s.settingsRowLabel}>Display Name</Text>
                   <Text style={s.settingsRowValue}>{username || 'Not set'}</Text>
+                </View>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#999" />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={s.settingsRow} onPress={() => openEdit('picture')}>
+              <View style={s.settingsRowLeft}>
+                <Ionicons name="image-outline" size={22} color="#666" />
+                <View style={s.settingsRowText}>
+                  <Text style={s.settingsRowLabel}>Profile Picture</Text>
+                  <Text style={s.settingsRowValue}>Change photo</Text>
+                </View>
+              </View>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                 {profileImageUrl ? (
+                   <Image 
+                     source={{ uri: profileImageUrl }} 
+                     style={{ width: 32, height: 32, borderRadius: 16 }} 
+                   />
+                 ) : (
+                   <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: '#eee', justifyContent: 'center', alignItems: 'center' }}>
+                     <Ionicons name="camera" size={16} color="#999" />
+                   </View>
+                 )}
+                 <Ionicons name="chevron-forward" size={20} color="#999" />
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={s.settingsRow} onPress={() => openEdit('account')}>
+              <View style={s.settingsRowLeft}>
+                <Ionicons name="business-outline" size={22} color="#666" />
+                <View style={s.settingsRowText}>
+                  <Text style={s.settingsRowLabel}>Account Type</Text>
+                  <Text style={s.settingsRowValue}>
+                    {isBusiness ? `Business (${businessName})` : 'Personal Account'}
+                  </Text>
                 </View>
               </View>
               <Ionicons name="chevron-forward" size={20} color="#999" />
@@ -377,14 +451,16 @@ export default function SettingsScreen() {
         <View style={s.overlay}>
           <View style={s.settingsModal}>
 
-            {/* ── username / bio modal ── */}
-            {(editingField === 'username' || editingField === 'bio') && (
+            {/* ── username / bio / account / picture modal ── */}
+            {(editingField === 'username' || editingField === 'bio' || editingField === 'account' || editingField === 'picture') && (
               <>
                 <Text style={s.settingsModalTitle}>
-                  Edit {editingField === 'username' ? 'Display Name' : 'Bio'}
+                  {editingField === 'username' ? 'Edit Display Name' : 
+                   editingField === 'bio' ? 'Edit Bio' :
+                   editingField === 'account' ? 'Account Preferences' : 'Profile Picture'}
                 </Text>
 
-                {editingField === 'bio' ? (
+                {editingField === 'bio' && (
                   <TextInput
                     style={[s.input, s.textarea]}
                     placeholder="Tell others about yourself"
@@ -394,13 +470,64 @@ export default function SettingsScreen() {
                     numberOfLines={4}
                     textAlignVertical="top"
                   />
-                ) : (
+                )}
+                
+                {editingField === 'username' && (
                   <TextInput
                     style={s.input}
                     placeholder="Enter display name"
                     value={username}
                     onChangeText={setUsername}
                   />
+                )}
+
+                {editingField === 'account' && (
+                  <View style={{ gap: 20 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Text style={{ fontSize: 16, color: '#333' }}>Business Account</Text>
+                      <Switch 
+                        value={isBusiness} 
+                        onValueChange={setIsBusiness}
+                        trackColor={{ false: '#ddd', true: '#4F728C' }}
+                      />
+                    </View>
+                    {isBusiness && (
+                      <View>
+                        <Text style={s.settingsRowLabel}>Business Name</Text>
+                        <TextInput
+                          style={s.input}
+                          placeholder="Enter your business name"
+                          value={businessName}
+                          onChangeText={setBusinessName}
+                        />
+                      </View>
+                    )}
+                  </View>
+                )}
+
+                {editingField === 'picture' && (
+                  <View style={{ alignItems: 'center', gap: 24, paddingVertical: 10 }}>
+                    <TouchableOpacity onPress={pickImage} style={{ 
+                      width: 150, 
+                      height: 150, 
+                      borderRadius: 75, 
+                      backgroundColor: '#f8f8f8',
+                      borderWidth: 1,
+                      borderColor: '#eee',
+                      overflow: 'hidden',
+                      justifyContent: 'center',
+                      alignItems: 'center'
+                    }}>
+                      {profileImageUrl ? (
+                        <Image source={{ uri: profileImageUrl }} style={{ width: '100%', height: '100%' }} />
+                      ) : (
+                        <Ionicons name="camera-outline" size={48} color="#4F728C" />
+                      )}
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={pickImage} style={[s.btn, { backgroundColor: '#f0f4f7' }]}>
+                      <Text style={{ color: '#4F728C', fontWeight: '600' }}>Choose New Photo</Text>
+                    </TouchableOpacity>
+                  </View>
                 )}
 
                 <View style={s.modalActions}>

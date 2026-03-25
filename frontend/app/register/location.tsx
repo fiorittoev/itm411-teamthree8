@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from "react"
 import { registerStyles as s, COLORS } from "../styles/register/registerStyles"
 import { useRegister } from "../context/RegisterContext"
 import { supabase } from "../../services/supabase"
+import { Ionicons } from '@expo/vector-icons'
 
 interface AddressComponents {
   street: string
@@ -176,85 +177,93 @@ export default function LocationStep() {
   }
 
   return (
-    <ScrollView
-      style={s.scrollContainer}
-      contentContainerStyle={s.scrollGrowContainer}
-      keyboardShouldPersistTaps="handled"
-    >
-      <Text style={s.titleMedium}>Your Address</Text>
+    <View style={s.stepContainer}>
+      <Text style={s.titleLarge}>Your Location</Text>
+      <Text style={s.subtitle}>
+        We use your address to find the lake community closest to you.
+      </Text>
 
       {/* Autocomplete Input */}
-      <Text style={s.labelSmall}>Search your address *</Text>
-      <View style={s.autocompleteContainer}>
-        <TextInput
-          value={inputText}
-          onChangeText={handleInputChange}
-          placeholder="Start typing your address..."
-          style={[s.input, { marginBottom: 0 }]}
-        />
+      <View style={s.section}>
+        <Text style={s.labelSmall}>Search your address *</Text>
+        <View style={s.autocompleteContainer}>
+          <TextInput
+            value={inputText}
+            onChangeText={handleInputChange}
+            placeholder="Start typing your address..."
+            style={[s.input, { marginBottom: 0 }]}
+            placeholderTextColor={COLORS.textLight}
+          />
 
-        {suggestions.length > 0 && (
-          <View style={s.suggestionsContainer}>
-            {suggestions.map((suggestion, i) => (
-              <TouchableOpacity
-                key={suggestion.place_id}
-                onPress={() => selectSuggestion(suggestion)}
-                style={[
-                  s.suggestionItem,
-                  i < suggestions.length - 1 && s.suggestionItemBorder,
-                ]}
-              >
-                <Text style={s.suggestionText}>{suggestion.description}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
+          {suggestions.length > 0 && (
+            <View style={s.suggestionsContainer}>
+              {suggestions.map((suggestion, i) => (
+                <TouchableOpacity
+                  key={suggestion.place_id}
+                  onPress={() => selectSuggestion(suggestion)}
+                  style={[
+                    s.suggestionItem,
+                    i < suggestions.length - 1 && s.suggestionItemBorder,
+                  ]}
+                >
+                  <Text style={s.suggestionText}>{suggestion.description}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+        </View>
       </View>
 
       {/* Apt field */}
-      <Text style={[s.labelSmall, { marginTop: 10 }]}>Apt, Suite, Unit (optional)</Text>
-      <TextInput
-        value={address.apt}
-        onChangeText={(v) => setAddress((prev) => ({ ...prev, apt: v }))}
-        placeholder="Apt 4B"
-        style={[s.input, s.inputWithMargin]}
-      />
+      <View style={s.section}>
+        <Text style={s.labelSmall}>Apt, Suite, Unit (optional)</Text>
+        <TextInput
+          value={address.apt}
+          onChangeText={(v) => setAddress((prev) => ({ ...prev, apt: v }))}
+          placeholder="Apt 4B"
+          style={s.input}
+          placeholderTextColor={COLORS.textLight}
+        />
+      </View>
 
       {/* Confirmed address preview */}
       {addressConfirmed && (
-        <View style={[
-          s.addressPreview,
-          addressTaken ? s.addressPreviewWarning : checkingAddress ? s.addressPreviewChecking : s.addressPreviewNormal,
-        ]}>
-          <View style={s.addressStatusRow}>
-            {checkingAddress
-              ? <ActivityIndicator size="small" color={COLORS.gray} />
-              : <Text style={[
-                  s.addressStatusText,
-                  addressTaken && s.addressStatusTextWarning,
-                ]}>
-                  {addressTaken ? "⚠ Address already registered" : "Address on file"}
-                </Text>
-            }
+        <View style={s.section}>
+          <View style={[
+            s.addressPreview,
+            addressTaken ? s.addressPreviewWarning : checkingAddress ? s.addressPreviewChecking : s.addressPreviewNormal,
+            s.card
+          ]}>
+            <View style={s.addressStatusRow}>
+              {checkingAddress
+                ? <ActivityIndicator size="small" color={COLORS.gray} />
+                : <Text style={[
+                    s.addressStatusText,
+                    addressTaken && s.addressStatusTextWarning,
+                  ]}>
+                    {addressTaken ? "⚠ Address already registered" : "✓ Address verified"}
+                  </Text>
+              }
+            </View>
+            <Text style={s.addressText}>{fullAddress}</Text>
+            {addressTaken && (
+              <Text style={s.addressWarningText}>
+                An account is already associated with this address.
+              </Text>
+            )}
+            <TouchableOpacity onPress={() => {
+              setAddressConfirmed(false)
+              setInputText("")
+              setLakeOptions([])
+              setSearched(false)
+              setAddressTaken(false)
+              setCheckingAddress(false)
+              updateField("community", "")
+              updateField("communityId", undefined)
+            }}>
+              <Text style={s.linkButton}>Change Address</Text>
+            </TouchableOpacity>
           </View>
-          <Text style={s.addressText}>{fullAddress}</Text>
-          {addressTaken && (
-            <Text style={s.addressWarningText}>
-              An account is already associated with this address. If this is you, try signing in instead.
-            </Text>
-          )}
-          <TouchableOpacity onPress={() => {
-            setAddressConfirmed(false)
-            setInputText("")
-            setLakeOptions([])
-            setSearched(false)
-            setAddressTaken(false)
-            setCheckingAddress(false)
-            updateField("community", "")
-            updateField("communityId", undefined)
-          }}>
-            <Text style={s.linkButton}>Change address</Text>
-          </TouchableOpacity>
         </View>
       )}
 
@@ -264,6 +273,8 @@ export default function LocationStep() {
         !addressConfirmed ? s.communitySelectorDisabled
           : searched && lakeOptions.length === 0 ? s.communitySelectorWarning
           : s.communitySelectorActive,
+        s.card,
+        { padding: 0 } // Card already has padding, but selector needs internal layout
       ]}>
         <View style={[
           s.communityHeader,
@@ -273,15 +284,15 @@ export default function LocationStep() {
             s.communityHeaderTitle,
             !addressConfirmed ? s.communityHeaderTitleDisabled : s.communityHeaderTitleActive,
           ]}>
-            Select Your Lake Community
+            Lake Community
           </Text>
           <Text style={[
             s.communityHeaderSubtitle,
             !addressConfirmed ? s.communityHeaderSubtitleDisabled : s.communityHeaderSubtitleActive,
           ]}>
             {!addressConfirmed
-              ? "Select an address above to see nearby lakes"
-              : "Choose the lake community closest to your home"}
+              ? "Verify your address to see nearby lakes"
+              : "Choose the lake closest to your home"}
           </Text>
         </View>
 
@@ -289,25 +300,25 @@ export default function LocationStep() {
           {!addressConfirmed && (
             <View style={s.communityEmptyState}>
               <Text style={s.communityEmptyText}>
-                Search and select your address to find nearby lakes
+                No address verified yet
               </Text>
             </View>
           )}
 
           {addressConfirmed && loading && (
             <View style={s.communityLoadingState}>
-              <ActivityIndicator color={COLORS.blue} />
-              <Text style={s.communityLoadingText}>Finding nearby lakes...</Text>
+              <ActivityIndicator color={COLORS.primary} />
+              <Text style={s.communityLoadingText}>Syncing with lake data...</Text>
             </View>
           )}
 
           {!loading && searched && lakeOptions.length === 0 && (
             <View style={s.communityErrorState}>
               <Text style={s.communityErrorTitle}>
-                No lakes found near this address
+                Off the grid?
               </Text>
               <Text style={s.communityErrorText}>
-                Double-check your address or try a nearby ZIP code.
+                We couldn't find any major lakes nearby.
               </Text>
             </View>
           )}
@@ -321,7 +332,7 @@ export default function LocationStep() {
                 lake.name === data.community ? s.communityOptionSelected : s.communityOptionUnselected,
               ]}
             >
-              <View>
+              <View style={{ flex: 1 }}>
                 <Text style={[
                   s.communityOptionText,
                   lake.name === data.community && s.communityOptionTextSelected,
@@ -333,17 +344,16 @@ export default function LocationStep() {
                   lake.name === data.community ? s.communityOptionSubtextSelected : s.communityOptionSubtext,
                   !lake.id && s.communityOptionSubtextNew,
                 ]}>
-                  {lake.id ? "Existing community" : "New — will be created"}
+                  {lake.id ? "Existing Community" : "New Community"}
                 </Text>
               </View>
-              {lake.name === data.community
-                ? <Text style={s.communityOptionCheck}>✓</Text>
-                : !lake.id && <Text style={s.communityOptionSubtextNew}>+ New</Text>
-              }
+              {lake.name === data.community && (
+                <Ionicons name="checkmark-circle" size={20} color={COLORS.primary} />
+              )}
             </TouchableOpacity>
           ))}
         </View>
       </View>
-    </ScrollView>
+    </View>
   )
 }

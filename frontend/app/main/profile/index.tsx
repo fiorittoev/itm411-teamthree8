@@ -14,7 +14,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
 import { supabase } from '../../../services/supabase';
-import { api, ItemOut } from '../../../services/api';
+import { api, ItemOut, PostOut } from '../../../services/api';
 import { ConnectButton } from '../../components/main';
 import { MessagesPanel } from '../../components/MessagesPanel';
 import { mainStyles as s } from '../../styles/main/mainStyles';
@@ -55,10 +55,16 @@ export default function ProfileScreen() {
     bio?: string;
     address?: string;
     community?: string;
+    profile_image_url?: string;
+    is_business?: boolean;
+    business_name?: string;
   } | null>(null);
 
+  const [activeTab, setActiveTab] = useState<'listings' | 'posts'>('listings');
   const [items, setItems] = useState<ItemOut[]>([]);
   const [itemsLoading, setItemsLoading] = useState(true);
+  const [posts, setPosts] = useState<PostOut[]>([]);
+  const [postsLoading, setPostsLoading] = useState(true);
 
   const [detailItem, setDetailItem] = useState<ItemOut | null>(null);
 
@@ -121,6 +127,9 @@ export default function ProfileScreen() {
         bio: data.bio,
         address: data.address,
         community: data.community,
+        is_business: data.is_business,
+        business_name: data.business_name,
+        profile_image_url: data.profile_image_url,
       });
 
       if (isMe) {
@@ -131,6 +140,9 @@ export default function ProfileScreen() {
       const allItems = await api.get<ItemOut[]>('/items');
       setItems(allItems.filter(i => i.owner_id === targetUserId));
 
+      const userPosts = await api.get<PostOut[]>(`/posts?user_id=${targetUserId}`);
+      setPosts(userPosts);
+
     }
     catch (e: any) {
       Alert.alert('Error', e.message ?? 'Failed to load profile');
@@ -138,6 +150,7 @@ export default function ProfileScreen() {
     finally {
       setLoading(false);
       setItemsLoading(false);
+      setPostsLoading(false);
     }
   }
 
@@ -178,10 +191,10 @@ export default function ProfileScreen() {
     );
   }
 
-  const displayName =
-    profile?.username?.trim() ||
-    email?.split('@')[0] ||
-    'User';
+  const displayName = 
+    (profile?.is_business && profile?.business_name) 
+      ? profile.business_name 
+      : profile?.username?.trim() || email?.split('@')[0] || 'User';
 
   return (
 
@@ -193,11 +206,32 @@ export default function ProfileScreen() {
 
           <View style={s.profileHeader}>
 
-            <View style={s.profileAvatar}>
-              <Ionicons name="person" size={44} color="white" />
+            <View style={[s.profileAvatar, profile?.is_business && { backgroundColor: '#2c3e50' }]}>
+              {profile?.profile_image_url ? (
+                <Image 
+                  source={{ uri: profile.profile_image_url }} 
+                  style={{ width: '100%', height: '100%', borderRadius: 44 }} 
+                />
+              ) : (
+                <Ionicons 
+                  name={profile?.is_business ? "business" : "person"} 
+                  size={profile?.is_business ? 40 : 44} 
+                  color="white" 
+                />
+              )}
             </View>
 
-            <Text style={s.profileName}>{displayName}</Text>
+            <View style={{ alignItems: 'center', gap: 4 }}>
+              <Text style={s.profileName}>{displayName}</Text>
+              <View style={[
+                s.adCardBadge, 
+                { backgroundColor: profile?.is_business ? 'rgba(79, 114, 140, 0.15)' : 'rgba(0,0,0,0.05)' }
+              ]}>
+                <Text style={[s.adCardSponsored, { fontSize: 9 }]}>
+                  {profile?.is_business ? 'Business Account' : 'Personal Account'}
+                </Text>
+              </View>
+            </View>
 
             {isOwnProfile && email && (
               <Text style={s.profileMeta}>{email}</Text>
@@ -254,28 +288,65 @@ export default function ProfileScreen() {
           </View>
 
           <View style={s.profileContentPadding}>
+            
+            {/* Tab Switcher */}
+            <View style={{ flexDirection: 'row', gap: 20, marginBottom: 20, borderBottomWidth: 1, borderBottomColor: '#eee' }}>
+              <TouchableOpacity 
+                onPress={() => setActiveTab('listings')}
+                style={{ paddingBottom: 10, borderBottomWidth: 2, borderBottomColor: activeTab === 'listings' ? '#4F728C' : 'transparent' }}
+              >
+                <Text style={{ fontSize: 16, fontWeight: '700', color: activeTab === 'listings' ? '#4F728C' : '#999' }}>
+                  Listings ({items.length})
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                onPress={() => setActiveTab('posts')}
+                style={{ paddingBottom: 10, borderBottomWidth: 2, borderBottomColor: activeTab === 'posts' ? '#4F728C' : 'transparent' }}
+              >
+                <Text style={{ fontSize: 16, fontWeight: '700', color: activeTab === 'posts' ? '#4F728C' : '#999' }}>
+                  Posts ({posts.length})
+                </Text>
+              </TouchableOpacity>
+            </View>
 
-            <Text style={s.panelTitle}>
-              {isOwnProfile ? 'My Listings' : 'Listings'}
-            </Text>
-
-            {itemsLoading ? (
-              <ActivityIndicator color="#4F728C" />
-            ) : items.length === 0 ? (
-              <Text style={s.emptyText}>No listings</Text>
+            {activeTab === 'listings' ? (
+              <>
+                {itemsLoading ? (
+                  <ActivityIndicator color="#4F728C" />
+                ) : items.length === 0 ? (
+                  <Text style={s.emptyText}>No listings</Text>
+                ) : (
+                  <View style={s.listingGrid}>
+                    {items.map(item => (
+                      <ListingCard
+                        key={item.id}
+                        item={item}
+                        onPress={() => setDetailItem(item)}
+                      />
+                    ))}
+                  </View>
+                )}
+              </>
             ) : (
-
-              <View style={s.listingGrid}>
-
-                {items.map(item => (
-                  <ListingCard
-                    key={item.id}
-                    item={item}
-                    onPress={() => setDetailItem(item)}
-                  />
-                ))}
-
-              </View>
+              <>
+                {postsLoading ? (
+                  <ActivityIndicator color="#4F728C" />
+                ) : posts.length === 0 ? (
+                  <Text style={s.emptyText}>No posts yet</Text>
+                ) : (
+                  <View style={{ gap: 12 }}>
+                    {posts.map(post => (
+                      <View key={post.id} style={{ padding: 12, backgroundColor: '#f9f9f9', borderRadius: 8, borderWidth: 1, borderColor: '#eee' }}>
+                        <Text style={{ fontSize: 16, fontWeight: '700', color: '#333', marginBottom: 4 }}>{post.title}</Text>
+                        <Text style={{ fontSize: 14, color: '#666' }}>{post.content}</Text>
+                        <Text style={{ fontSize: 10, color: '#999', marginTop: 8 }}>
+                          {new Date(post.created_at).toLocaleDateString()}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
+              </>
             )}
 
           </View>

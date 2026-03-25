@@ -12,6 +12,12 @@ class Settings(BaseSettings):
     DEBUG: bool = False
     PORT: int = 8000
 
+    # Ads / email settings
+    ADMIN_SECRET: str = "change-me-secret"
+    GMAIL_USER: str = ""
+    GMAIL_APP_PASSWORD: str = ""
+    API_BASE_URL: str = "http://localhost:8000"
+
     class Config:
         env_file = ".env"
 

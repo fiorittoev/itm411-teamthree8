@@ -1,64 +1,57 @@
-import { View, Text, TextInput,Keyboard } from "react-native"
+import { View, Text, TextInput, Keyboard } from "react-native"
 import { useEffect } from "react"
-import { registerStyles as s } from "../styles/register/registerStyles"
+import { registerStyles as s, COLORS } from "../styles/register/registerStyles"
 import { useRegister } from "../context/RegisterContext"
 
 export default function AboutStep() {
   const { data, updateField, setStepValid } = useRegister()
 
   useEffect(() => {
-    const trimmedBio = data.bio.trim()
-    const validBio =
-      trimmedBio.length >= 10 &&
-      trimmedBio.length <= 300
-
+    const trimmedBio = (data.bio || "").trim()
+    const validBio = trimmedBio.length >= 10 && trimmedBio.length <= 300
     setStepValid(validBio)
   }, [data.bio])
 
   return (
-    <View style={s.paddingContainer}>
-      <Text style={s.titleMedium}>
-        Tell others a bit about yourself in your own words.
+    <View style={s.stepContainer}>
+      <Text style={s.titleLarge}>Tell us about yourself</Text>
+      <Text style={s.subtitle}>
+        Share what you love about lake life. This helps your neighbors get to know you.
       </Text>
 
-      <Text style={[s.subtitle, s.subtitleMedium]}>
-        This is your chance to describe who you are, your experiences,
-        or anything that helps people get to know you better.
-      </Text>
+      <View style={s.section}>
+        <Text style={s.labelSmall}>Your Bio *</Text>
+        <TextInput
+          value={data.bio}
+          onChangeText={(text) => updateField("bio", text)}
+          placeholder="e.g. I've lived on the lake for 10 years and love early morning paddles..."
+          multiline
+          numberOfLines={6}
+          style={[s.input, s.textarea]}
+          blurOnSubmit={true}       
+          onSubmitEditing={() => Keyboard.dismiss()}
+          returnKeyType="done"     
+          placeholderTextColor={COLORS.textLight}
+          maxLength={300}
+        />
 
-      <TextInput
-        value={data.bio}
-        onChangeText={(text) => updateField("bio", text)}
-        placeholder="Tell others a little about yourself"
-        multiline
-        numberOfLines={4}
-        style={[s.input, s.textarea]}
-        blurOnSubmit={true}       
-        onSubmitEditing={() => Keyboard.dismiss()}
-        returnKeyType="done"     
-      />
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 }}>
+          <View>
+            {data.bio.length > 0 && data.bio.trim().length < 10 && (
+              <Text style={s.errorText}>Mini bio must be at least 10 chars</Text>
+            )}
+          </View>
+          <Text style={[s.labelSmall, data.bio.length >= 300 && { color: COLORS.error }]}>
+            {data.bio.length}/300
+          </Text>
+        </View>
+      </View>
 
-      {/* Character Counter */}
-      <Text style={s.characterCounter}>
-        {data.bio.length}/300 characters
-      </Text>
-
-      {/* Validation Feedback */}
-      {data.bio.length > 0 && data.bio.trim().length < 10 && (
-        <Text style={s.errorTextSmall}>
-          Bio must be at least 10 characters
+      <View style={[s.card, { backgroundColor: COLORS.lightBlue, borderColor: COLORS.primary + '20' }]}>
+        <Text style={[s.bodyText, { color: COLORS.primary, fontSize: 13, fontWeight: '500' }]}>
+          💡 Tip: Mention your favorite lake activities or if you're new to the area!
         </Text>
-      )}
-
-      {data.bio.length > 300 && (
-        <Text style={s.errorTextSmall}>
-          Bio must be under 300 characters
-        </Text>
-      )}
-
-      <Text style={s.infoText}>
-        About Me visibility can be toggled in settings later.
-      </Text>
+      </View>
     </View>
   )
 }

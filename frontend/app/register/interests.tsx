@@ -1,7 +1,8 @@
 import { View, Text, TouchableOpacity, FlatList } from "react-native"
 import { useEffect, useState } from "react"
-import { registerStyles as s } from "../styles/register/registerStyles"
+import { registerStyles as s, COLORS } from "../styles/register/registerStyles"
 import { useRegister } from "../context/RegisterContext"
+import { Ionicons } from '@expo/vector-icons'
 
 // Example interest options
 const ALL_INTERESTS = [
@@ -35,38 +36,41 @@ export default function InterestStep() {
   }
 
   return (
-    <View style={s.paddingContainer}>
-      <Text style={s.titleMedium}>
-        Choose the interests and hobbies that most interest you
+    <View style={s.stepContainer}>
+      <Text style={s.titleLarge}>Your Interests</Text>
+      <Text style={s.subtitle}>
+        Select what you're passionate about to connect with like-minded neighbors.
       </Text>
 
-      <Text style={[s.subtitle, s.subtitleMedium]}>Select as many as you would like</Text>
-
-      <FlatList
-        data={ALL_INTERESTS}
-        keyExtractor={(item) => item}
-        numColumns={2}
-        columnWrapperStyle={s.interestColumnWrapper}
-        renderItem={({ item }) => (
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
+        {ALL_INTERESTS.map((item) => (
           <TouchableOpacity
+            key={item}
             onPress={() => toggleInterest(item)}
             style={[
               s.interestChip,
               selected.includes(item) ? s.interestChipSelected : s.interestChipUnselected,
+              { width: '48%', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }
             ]}
           >
-            <Text style={selected.includes(item) ? s.interestChipTextSelected : s.interestChipText}>
+            <Text style={[
+              s.interestChipText,
+              selected.includes(item) && s.interestChipTextSelected
+            ]}>
               {item}
             </Text>
+            {selected.includes(item) && (
+              <Ionicons name="checkmark" size={16} color={COLORS.white} />
+            )}
           </TouchableOpacity>
-        )}
-      />
+        ))}
+      </View>
 
-      <Text style={s.infoText}>
-        Interests can be added and removed in settings
-      </Text>
-
-      <Text style={s.infoTextSmall}>Interests visibility can be turned on or off in settings</Text>
+      <View style={[s.card, { backgroundColor: COLORS.lightGray, borderColor: COLORS.border, marginTop: 40 }]}>
+        <Text style={[s.bodyText, { fontSize: 13, color: COLORS.textMuted, textAlign: 'center' }]}>
+          You can always update these later in your profile settings.
+        </Text>
+      </View>
     </View>
   )
 }

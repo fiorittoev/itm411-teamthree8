@@ -1,14 +1,18 @@
 import { useState, useMemo } from "react"
-import { View, Text, TouchableOpacity, Button } from "react-native"
+import { View, Text, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from "react-native"
 import { Slot, usePathname, useRouter} from "expo-router"
 import { RegisterProvider, useRegister } from "../context/RegisterContext"
 import { supabase } from "../../services/supabase"
 import { registerStyles as s, COLORS } from "../styles/register/registerStyles"
+import { Ionicons } from '@expo/vector-icons'
+import { ActivityIndicator } from "react-native"
 // Routes for each step in the registration flow, used for navigation and progress tracking
 const steps = [
   "/register",
+  "/register/account-type",
   "/register/location",
   "/register/display-name",
+  "/register/profile-picture",
   "/register/about",
   "/register/interests",
   "/register/review",
@@ -60,6 +64,9 @@ function RegisterContent() {
           address: data.address,
           community: data.community,
           bio: data.bio,
+          profile_image_url: data.profileImageUrl,
+          is_business: data.accountType === 'business',
+          business_name: data.accountType === 'business' ? data.businessName : null,
         }),
       }).then(async res => {
         if (!res.ok) {
@@ -97,26 +104,60 @@ function RegisterContent() {
 
   return (
     <View style={s.container}>
-      {currentStep !== steps.length - 1 && (
-        <TouchableOpacity onPress={() => router.back()}>
-          <Text style={s.backButton}>← Back</Text>
-        </TouchableOpacity>
-      )}
-
-      <Text style={s.titleLarge}>Profile Setup</Text>
-
-      <View style={s.overflowHidden}>
-        <Slot />
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 32 }}>
+        {currentStep > 0 && currentStep !== steps.length - 1 && (
+          <TouchableOpacity 
+            onPress={() => router.back()}
+            style={{ marginRight: 16 }}
+          >
+            <Ionicons name="arrow-back" size={24} color={COLORS.primary} />
+          </TouchableOpacity>
+        )}
+        <View style={{ flex: 1 }}>
+          <Text style={[s.titleLarge, { marginBottom: 0 }]}>Profile Setup</Text>
+          <Text style={[s.labelSmall, { color: COLORS.textMuted }]}>
+            Step {currentStep + 1} of {steps.length}
+          </Text>
+        </View>
       </View>
 
-      {message && <Text style={s.errorText}>{message}</Text>}
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
+        <ScrollView 
+          style={{ flex: 1 }}
+          contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <Slot />
+        </ScrollView>
+      </KeyboardAvoidingView>
 
-      <View style={s.section}>
-        <Button
-          title={currentStep === steps.length - 1 ? "Create Account" : "Next"}
+      {message && (
+        <View style={[s.card, { backgroundColor: COLORS.error + '10', borderColor: COLORS.error + '30', marginBottom: 16 }]}>
+          <Text style={[s.errorText, { marginTop: 0 }]}>{message}</Text>
+        </View>
+      )}
+
+      <View style={{ paddingBottom: 40, paddingTop: 10 }}>
+        <TouchableOpacity
           onPress={handleNext}
           disabled={!isStepValid || loading}
-        />
+          style={[
+            s.primaryButton,
+            (!isStepValid || loading) && { backgroundColor: COLORS.border, shadowOpacity: 0 }
+          ]}
+        >
+          {loading ? (
+            <ActivityIndicator color={COLORS.white} />
+          ) : (
+            <Text style={s.primaryButtonText}>
+              {currentStep === steps.length - 1 ? "Create Account" : "Continue"}
+            </Text>
+          )}
+        </TouchableOpacity>
 
         <View style={s.progressBackground}>
           <View

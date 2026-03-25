@@ -1,6 +1,6 @@
 import { View, Text, TextInput } from "react-native"
 import { useEffect, useState } from "react"
-import { registerStyles as s } from "../styles/register/registerStyles"
+import { registerStyles as s, COLORS } from "../styles/register/registerStyles"
 import { useRegister } from "../context/RegisterContext"
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:8000'
@@ -32,51 +32,58 @@ export default function EmailStep() {
   }, [data.email, data.password, data.confirmPassword])
   
   return (
-    <View style={s.paddingContainer}>
-      <Text style={s.titleLarge}>Register</Text>
-      <Text style={[s.subtitle, s.subtitleMedium]}>
-        Create an account by filling in the information below
+    <View style={s.stepContainer}>
+      <Text style={s.titleLarge}>Welcome to the Community</Text>
+      <Text style={s.subtitle}>
+        Let's start by creating your account credentials.
       </Text>
 
-      <Text style={s.label}>Email</Text>
-      <TextInput
-        value={data.email}
-        onChangeText={(text) => { updateField("email", text); setEmailTaken(false) }}
-        keyboardType="email-address"
-        autoCapitalize="none"
-        autoComplete="email"
-        placeholder="you@example.com"
-        style={s.input}
-      />
+      <View style={s.section}>
+        <Text style={s.labelSmall}>Email Address *</Text>
+        <TextInput
+          value={data.email}
+          onChangeText={(text) => { updateField("email", text); setEmailTaken(false) }}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoComplete="email"
+          placeholder="e.g. resident@lake.com"
+          style={[s.input, (emailTaken || (data.email && !/\S+@\S+\.\S+/.test(data.email))) && s.inputError]}
+          placeholderTextColor={COLORS.textLight}
+        />
+        {data.email && !/\S+@\S+\.\S+/.test(data.email) && (
+          <Text style={s.errorText}>Please enter a valid email address</Text>
+        )}
+        {emailTaken && (
+          <Text style={s.errorText}>This email is already registered</Text>
+        )}
+      </View>
 
-      {data.email && !/\S+@\S+\.\S+/.test(data.email) && (
-        <Text style={s.errorTextSmall}>Enter a valid email address</Text>
-      )}
-      {emailTaken && (
-        <Text style={s.errorTextSmall}>This email is already in use</Text>
-      )}
+      <View style={s.section}>
+        <Text style={s.labelSmall}>Password *</Text>
+        <TextInput
+          value={data.password}
+          onChangeText={(text) => updateField("password", text)}
+          secureTextEntry
+          placeholder="At least 6 characters"
+          style={s.input}
+          placeholderTextColor={COLORS.textLight}
+        />
+      </View>
 
-      <Text style={s.label}>Password</Text>
-      <TextInput
-        value={data.password}
-        onChangeText={(text) => updateField("password", text)}
-        secureTextEntry
-        placeholder="Password (min 6 characters)"
-        style={s.input}
-      />
-
-      <Text style={s.label}>Confirm Password</Text>
-      <TextInput
-        value={data.confirmPassword}
-        onChangeText={(text) => updateField("confirmPassword", text)}
-        secureTextEntry
-        placeholder="Confirm password"
-        style={s.input}
-      />
-
-      {data.password && data.confirmPassword && data.password !== data.confirmPassword && (
-        <Text style={s.errorTextSmall}>Passwords do not match</Text>
-      )}
+      <View style={s.section}>
+        <Text style={s.labelSmall}>Confirm Password *</Text>
+        <TextInput
+          value={data.confirmPassword}
+          onChangeText={(text) => updateField("confirmPassword", text)}
+          secureTextEntry
+          placeholder="Repeat your password"
+          style={[s.input, data.confirmPassword && data.password !== data.confirmPassword && s.inputError]}
+          placeholderTextColor={COLORS.textLight}
+        />
+        {data.password && data.confirmPassword && data.password !== data.confirmPassword && (
+          <Text style={s.errorText}>Passwords do not match</Text>
+        )}
+      </View>
     </View>
   )
-}
+}

@@ -10,12 +10,13 @@ import {
     KeyboardAvoidingView,
     TextInput,
     Alert,
-    ScrollView
+    ScrollView,
+    useWindowDimensions
 } from 'react-native';
-import { mainStyles as s } from '../styles/main/mainStyles';
+import { mainStyles as s, responsiveStyles as rs } from '../styles/main/mainStyles';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { api, PostOut, ItemOut, ConnectionStatus } from '../../services/api';
+import { api, PostOut, ItemOut, ConnectionStatus, AdOut } from '../../services/api';
 import React, { useState,useEffect} from 'react';
 // ConnectButton.tsx — reusable button for profile screen + modal
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -33,11 +34,14 @@ export function Loading(){
     )
 }
 
-export function Navbar({id}: {id: string|null}) {
+export function Navbar({id, isBusiness, profileImageUrl}: {id: string|null, isBusiness?: boolean, profileImageUrl?: string | null}) {
   const router = useRouter();
+  const { width } = useWindowDimensions();
+  const isMobile = width < 768;
+
   return(
-    <View style={s.navbar}>
-      <Text style={s.logo}>MyMichiganLake</Text>
+    <View style={[s.navbar, isMobile && rs.navbarMobile]}>
+      {!isMobile && <Text style={s.logo}>MyMichiganLake</Text>}
       <View style={s.navIcons}>
         <TouchableOpacity onPress={() => router.push('/main')}>
           <Ionicons name="home-outline" size={28} color="white" />
@@ -51,12 +55,24 @@ export function Navbar({id}: {id: string|null}) {
         <TouchableOpacity onPress={() => router.push('/main/search')}>
           <Ionicons name="search" size={28} color="white" />
         </TouchableOpacity>
+        {isBusiness && (
+          <TouchableOpacity onPress={() => router.push('/main/submit-ad')}>
+            <Ionicons name="megaphone-outline" size={28} color="white" />
+          </TouchableOpacity>
+        )}
       </View>
       <TouchableOpacity onPress={() => {
           if (id) router.push(`/main/profile/${id}`);
         }}>
         <View style={s.profileCircle}>
-          <Ionicons name="person-outline" size={20} color="white" />
+          {profileImageUrl ? (
+            <Image 
+              source={{ uri: profileImageUrl }} 
+              style={{ width: '100%', height: '100%', borderRadius: 15 }} 
+            />
+          ) : (
+            <Ionicons name="person-outline" size={20} color="white" />
+          )}
         </View>
       </TouchableOpacity>
     </View>
@@ -72,18 +88,47 @@ export function PostCard({ post, currentAuthorId, onDelete }: {
   return (
     <View style={s.postBox}>
       <View style={s.postHeader}>
-        <TouchableOpacity onPress={() => router.push(`/main/profile/${post.author_id}`)}>
-          <Text style={s.postAuthor}>{post.author_username}</Text>
+        <TouchableOpacity 
+          onPress={() => router.push(`/main/profile/${post.author_id}`)}
+          style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}
+        >
+          <View style={[s.postAvatar, post.author_is_business && { backgroundColor: '#2c3e50' }]}>
+            {post.author_profile_image_url ? (
+              <Image 
+                source={{ uri: post.author_profile_image_url }} 
+                style={{ width: '100%', height: '100%', borderRadius: 18 }} 
+              />
+            ) : (
+              <Ionicons 
+                name={post.author_is_business ? "business" : "person"} 
+                size={18} 
+                color="white" 
+              />
+            )}
+          </View>
+          <View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Text style={s.postAuthor}>
+                { (post.author_is_business && post.author_business_name) ? post.author_business_name : post.author_username }
+              </Text>
+              {post.author_is_business && (
+                <View style={[s.adCardBadge, { paddingHorizontal: 6, paddingVertical: 2 }]}>
+                  <Text style={[s.adCardSponsored, { fontSize: 8 }]}>Business</Text>
+                </View>
+              )}
+            </View>
+            <Text style={s.postTime}>{formatTime(post.created_at)}</Text>
+          </View>
         </TouchableOpacity>
-        <Text style={s.postTime}>{formatTime(post.created_at)}</Text>
+        
+        {currentAuthorId === post.author_id && (
+          <TouchableOpacity onPress={() => onDelete(post.id)}>
+            <Ionicons name="trash-outline" size={20} color="#e74c3c" />
+          </TouchableOpacity>
+        )}
       </View>
+
       <Text style={s.postText}>{post.content}</Text>
-      {currentAuthorId === post.author_id && (
-        <TouchableOpacity style={s.deleteBtn} onPress={() => onDelete(post.id)}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-          <Ionicons name="trash-outline" size={18} color="#666" />
-        </TouchableOpacity>
-      )}
     </View>
   );
 }
@@ -112,7 +157,17 @@ export function MarketCard({ item, isFav, onPress, onToggleFav }: {
       <View style={s.cardInfo}>
         <View style={s.cardText}>
           <Text style={s.cardName} numberOfLines={2}>{item.name}</Text>
-          <Text style={s.cardPrice}>${item.price}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 4 }}>
+            <Text style={[s.cardPrice, { marginBottom: 0 }]}>${item.price}</Text>
+            {item.owner_is_business && (
+              <View style={[s.adCardBadge, { paddingHorizontal: 4, paddingVertical: 1 }]}>
+                <Text style={[s.adCardSponsored, { fontSize: 7 }]}>Business</Text>
+              </View>
+            )}
+          </View>
+          <Text style={{ fontSize: 10, color: '#888' }} numberOfLines={1}>
+            Seller: { (item.owner_is_business && item.owner_business_name) ? item.owner_business_name : item.owner_username }
+          </Text>
         </View>
         <TouchableOpacity
           onPress={e => { e.stopPropagation?.(); onToggleFav(); }}
@@ -264,20 +319,35 @@ export function ProfileModal({
               showsVerticalScrollIndicator={false}
             >
 
-              {/* Profile Header */}
               <View style={s.searchProfileContainer}>
-                <View style={s.userResultAvatar}>
+                <View style={[s.userResultAvatar, user.is_business && { backgroundColor: '#2c3e50' }]}>
                   {user.profile_image_url ? (
                     <Image
                       source={{ uri: user.profile_image_url }}
                       style={{ width: '100%', height: '100%', borderRadius: 44 }}
                     />
                   ) : (
-                    <Ionicons name="person" size={44} color="white" />
+                    <Ionicons 
+                      name={user.is_business ? "business" : "person"} 
+                      size={44} 
+                      color="white" 
+                    />
                   )}
                 </View>
 
-                <Text style={s.modalTitle}>{user.username}</Text>
+                <View style={{ alignItems: 'center', gap: 6 }}>
+                  <Text style={s.modalTitle}>
+                    { (user.is_business && user.business_name) ? user.business_name : user.username }
+                  </Text>
+                  <View style={[
+                    s.adCardBadge, 
+                    { backgroundColor: user.is_business ? 'rgba(79, 114, 140, 0.15)' : 'rgba(0,0,0,0.05)' }
+                  ]}>
+                    <Text style={[s.adCardSponsored, { fontSize: 9 }]}>
+                      {user.is_business ? 'Business Account' : 'Personal Account'}
+                    </Text>
+                  </View>
+                </View>
               </View>
 
 
@@ -436,3 +506,59 @@ export function ConnectButton({ userId }: { userId: string }) {
     </TouchableOpacity>
   );
 }
+
+// ─── Ads ──────────────────────────────────────────────────────────────────────
+
+export function AdCard({ ad }: { ad: AdOut }) {
+  const isMarketplace = ad.ad_type === 'marketplace';
+
+  return (
+    <View style={[s.adCard, isMarketplace && s.adCardMarketplace]}>
+      <View style={s.adCardHeader}>
+        <View style={s.adCardBadge}>
+          <Ionicons name="megaphone" size={12} color="#4F728C" />
+          <Text style={s.adCardSponsored}>Sponsored</Text>
+        </View>
+        <Text style={s.adCardOwner}>{ad.business_name || ad.owner_username}</Text>
+      </View>
+
+      <View style={isMarketplace ? s.adMarketplaceContent : s.adPostContent}>
+        {isMarketplace && ad.image ? (
+          <Image source={{ uri: ad.image }} style={s.adMarketplaceImage} />
+        ) : null}
+
+        <View style={s.adTextContainer}>
+          <Text style={s.adCardTitle}>{ad.title}</Text>
+          <Text style={s.adCardBody} numberOfLines={isMarketplace ? 2 : 4}>{ad.body}</Text>
+          
+          {ad.link_url && (
+            <TouchableOpacity style={[s.btn, s.btnBlue, { paddingVertical: 8, marginTop: 12, borderRadius: 8 }]} onPress={() => {}}>
+              <Text style={[s.btnText, { fontSize: 13 }]}>{isMarketplace ? 'View Deal' : 'Learn More'}</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+    </View>
+  );
+}
+
+/**
+ * Injects ads into a list of items every 5 items.
+ */
+export function injectAds(items: any[], ads: AdOut[]): any[] {
+  if (!ads.length) return items;
+  
+  const result: any[] = [];
+  let adIndex = 0;
+  
+  items.forEach((item, index) => {
+    result.push(item);
+    // Inject an ad every 5 items, cyclical through ads
+    if ((index + 1) % 5 === 0 && ads.length > 0) {
+      result.push({ ...ads[adIndex % ads.length], _isAd: true });
+      adIndex++;
+    }
+  });
+  
+  return result;
+}

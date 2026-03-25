@@ -8,7 +8,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, TouchableOpacity, FlatList, Modal, TextInput,
   Image, Dimensions, KeyboardAvoidingView, Platform,
-  SafeAreaView, Alert, ActivityIndicator, RefreshControl, ScrollView,
+  SafeAreaView, Alert, ActivityIndicator, RefreshControl, ScrollView, useWindowDimensions,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -23,6 +23,8 @@ type Filter = 'all' | 'yours' | 'favorites';
 
 export default function MarketplaceScreen() {
   
+  const { width } = useWindowDimensions();
+  const isMobile = width < 768;
   const { openItemId } = useLocalSearchParams<{ openItemId?: string }>();
 
   const [items, setItems]         = useState<ItemOut[]>([]);
@@ -203,14 +205,14 @@ export default function MarketplaceScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={[s.safe, { justifyContent: 'center', alignItems: 'center' }]}>
+      <SafeAreaView style={[s.safe, isMobile && s.safeMobile]}>
         <ActivityIndicator size="large" color="#4F728C" />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={s.safe}>
+    <SafeAreaView style={[s.safe, isMobile && s.safeMobile]}>
       {/* MARKETPLACE */}
       <View style={s.marketplace}>
         <View style={s.marketHeader}>
@@ -233,9 +235,10 @@ export default function MarketplaceScreen() {
         </View>
 
         <FlatList
+          key={isMobile ? 'cols-2' : 'cols-4'}
           data={displayed}
           keyExtractor={i => i.id}
-          numColumns={4}
+          numColumns={isMobile ? 2 : 4}
           contentContainerStyle={s.gridContent}
           columnWrapperStyle={s.gridRow}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}

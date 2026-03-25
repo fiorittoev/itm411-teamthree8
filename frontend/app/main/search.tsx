@@ -1,6 +1,6 @@
 import {
   View, Text, TouchableOpacity, ScrollView, FlatList,
-  Image, Modal, SafeAreaView, ActivityIndicator, Alert, TextInput,
+  Image, Modal, SafeAreaView, ActivityIndicator, Alert, TextInput, useWindowDimensions,
 } from 'react-native';
 import React, { useState, useEffect, useRef } from 'react';
 import { mainStyles as s } from '../styles/main/mainStyles';
@@ -24,6 +24,8 @@ interface SearchResults {
 
 export default function SearchScreen() {
   const router = useRouter();
+  const { width } = useWindowDimensions();
+  const isMobile = width < 768;
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [results, setResults] = useState<SearchResults>({ items: [], users: [], communities: [] });
@@ -152,7 +154,7 @@ export default function SearchScreen() {
   };
 
   return (
-    <SafeAreaView style={s.safe}>
+    <SafeAreaView style={[s.safe, isMobile && s.safeMobile]}>
       <View style={s.searchPanel}>
         {/* Header with search input and filters */}
         <View style={s.searchHeader}>
@@ -285,7 +287,16 @@ export default function SearchScreen() {
                         </View>
                         <View style={s.itemResultFooter}>
                           <Text style={s.itemResultPrice}>${item.price}</Text>
-                          <Text style={s.itemResultSeller}>{item.owner_username}</Text>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                            <Text style={s.itemResultSeller}>
+                              { (item.owner_is_business && item.owner_business_name) ? item.owner_business_name : item.owner_username }
+                            </Text>
+                            {item.owner_is_business && (
+                                <View style={[s.adCardBadge, { paddingHorizontal: 4, paddingVertical: 1 }]}>
+                                    <Text style={[s.adCardSponsored, { fontSize: 7 }]}>Business</Text>
+                                </View>
+                            )}
+                          </View>
                         </View>
                       </View>
                     </TouchableOpacity>
@@ -304,18 +315,31 @@ export default function SearchScreen() {
                       onPress={() => openUserProfile(user)}
                       activeOpacity={0.7}
                     >
-                      {user.profile_image_url ? (
-                        <Image
-                          source={{ uri: user.profile_image_url }}
-                          style={s.userResultAvatar}
-                        />
-                      ) : (
-                        <View style={s.userResultAvatar}>
-                          <Ionicons name="person" size={28} color="white" />
+                        <View style={[s.userResultAvatar, user.is_business && { backgroundColor: '#2c3e50' }]}>
+                          {user.profile_image_url ? (
+                            <Image
+                              source={{ uri: user.profile_image_url }}
+                              style={s.userResultAvatar}
+                            />
+                          ) : (
+                            <Ionicons 
+                              name={user.is_business ? "business" : "person"} 
+                              size={28} 
+                              color="white" 
+                            />
+                          )}
                         </View>
-                      )}
                       <View style={s.userResultContent}>
-                        <Text style={s.userResultName}>{user.username}</Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                          <Text style={s.userResultName}>
+                            { (user.is_business && user.business_name) ? user.business_name : user.username }
+                          </Text>
+                          {user.is_business && (
+                            <View style={[s.adCardBadge, { paddingHorizontal: 5, paddingVertical: 2 }]}>
+                              <Text style={[s.adCardSponsored, { fontSize: 8 }]}>Business</Text>
+                            </View>
+                          )}
+                        </View>
                         {user.bio && (
                           <Text
                             style={s.userResultBio}
@@ -389,7 +413,16 @@ export default function SearchScreen() {
                 >
                   <Text style={s.detailName}>{selectedItem.name}</Text>
                   <Text style={s.detailPrice}>${selectedItem.price}</Text>
-                  <Text style={s.detailSeller}>Posted by: {selectedItem.owner_username}</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                    <Text style={s.detailSeller}>
+                        Posted by: { (selectedItem.owner_is_business && selectedItem.owner_business_name) ? selectedItem.owner_business_name : selectedItem.owner_username }
+                    </Text>
+                    {selectedItem.owner_is_business && (
+                        <View style={[s.adCardBadge, { paddingHorizontal: 6, paddingVertical: 2 }]}>
+                            <Text style={[s.adCardSponsored, { fontSize: 8 }]}>Business</Text>
+                        </View>
+                    )}
+                  </View>
                   
                   {selectedItem.owner_id !== currentUserId && (
                     <TouchableOpacity

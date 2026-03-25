@@ -11,6 +11,8 @@ export type RegisterData = {
   bio: string
   interests: string[]
   profileImageUrl?: string
+  accountType: 'user' | 'business'
+  businessName: string
 }
 
 type RegisterContextType = {
@@ -36,6 +38,8 @@ export function RegisterProvider({ children }: { children: ReactNode }) {
     interests: [],
     profileImageUrl: undefined,
     communityId: undefined,
+    accountType: 'user',
+    businessName: '',
   })
 
   const [isStepValid, setStepValid] = useState(false)

@@ -6,7 +6,7 @@
 
 import {
   View, Text, TouchableOpacity, ScrollView, FlatList,
-  Image, Modal, SafeAreaView, ActivityIndicator, Alert, TextInput, RefreshControl,
+  Image, Modal, SafeAreaView, ActivityIndicator, Alert, TextInput, RefreshControl, useWindowDimensions,
 } from 'react-native';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -14,7 +14,7 @@ import { mainStyles as s } from '../styles/main/mainStyles';
 import { Ionicons } from '@expo/vector-icons';
 import { api, SearchItemResult, SearchUserResult, PostOut } from '../../services/api';
 import { supabase } from '../../services/supabase';
-import { PostCard, PostModal, DeleteConfirmModal, ProfileModal } from '../components/main';
+import { PostCard, PostModal, DeleteConfirmModal, ProfileModal, AdCard, injectAds } from '../components/main';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -46,11 +46,15 @@ export default function CommunitiesScreen() {
   const [currentAuthorId, setCurrentAuthorId] = useState<string | null>(null);
   const [activeCommunityId, setActiveCommunityId] = useState<string | undefined>(communityId);
 
+  const { width } = useWindowDimensions();
+  const isMobile = width < 768;
+
   // ── Feed (posts tab) ────────────────────────────────────────────────────────
   const [posts, setPosts] = useState<PostOut[]>([]);
   const [postModalVisible, setPostModalVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState('');
+  const [ads, setAds] = useState<any[]>([]);
 
   // ── Search (items + users tabs) ─────────────────────────────────────────────
   const [searchQuery, setSearchQuery] = useState('');
@@ -151,10 +155,12 @@ export default function CommunitiesScreen() {
   const fetchPosts = async (id?: string) => {
     const cid = id || activeCommunityId;
     try {
-      const data = await api.get<PostOut[]>(
-        cid ? `/posts?community_id=${cid}` : '/posts'
-      );
-      setPosts(data);
+      const [fetchedPosts, fetchedAds] = await Promise.all([
+        api.get<PostOut[]>(cid ? `/posts?community_id=${cid}` : '/posts'),
+        api.ads.listApproved(),
+      ]);
+      setPosts(fetchedPosts);
+      setAds(fetchedAds);
     } catch {
       setPosts([]);
     }
@@ -204,7 +210,7 @@ export default function CommunitiesScreen() {
   const showSearchPrompt = !searchLoading && !searchQuery.trim() && items.length === 0 && users.length === 0;
 
   return (
-    <SafeAreaView style={s.safe}>
+    <SafeAreaView style={[s.safe, isMobile && s.safeMobile]}>
       <View style={s.searchPanel}>
 
         {/* ── Header ── */}
@@ -283,19 +289,22 @@ export default function CommunitiesScreen() {
                 </TouchableOpacity>
               </View>
               <FlatList
-                data={posts}
-                keyExtractor={(p) => p.id}
+                data={injectAds(posts, ads)}
+                keyExtractor={(item, index) => item.id + (item._isAd ? '_ad' : '')}
                 contentContainerStyle={s.communityFeedContent}
                 refreshControl={
                   <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
                 }
-                renderItem={({ item }) => (
-                  <PostCard
-                    post={item}
-                    currentAuthorId={currentAuthorId}
-                    onDelete={(id) => { setDeleteTargetId(id); setDeleteModalVisible(true); }}
-                  />
-                )}
+                renderItem={({ item }) => {
+                  if (item._isAd) return <AdCard ad={item} />;
+                  return (
+                    <PostCard
+                      post={item}
+                      currentAuthorId={currentAuthorId}
+                      onDelete={(id) => { setDeleteTargetId(id); setDeleteModalVisible(true); }}
+                    />
+                  );
+                }}
                 ListEmptyComponent={
                   <View style={s.searchEmpty}>
                     <Ionicons name="create-outline" size={48} color="#ddd" />

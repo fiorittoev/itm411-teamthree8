@@ -12,6 +12,9 @@ export interface PostOut {
   created_at: string;
   author_id: string;
   author_username: string;
+  author_is_business?: boolean;
+  author_business_name?: string;
+  author_profile_image_url?: string;
 }
 
 export interface ItemOut {
@@ -23,6 +26,8 @@ export interface ItemOut {
   image: string; // base64 data-URI
   owner_id: string;
   owner_username: string;
+  owner_is_business?: boolean;
+  owner_business_name?: string;
   created_at: string;
 }
 
@@ -35,6 +40,8 @@ export interface SearchItemResult {
   image: string;
   owner_id: string;
   owner_username: string;
+  owner_is_business?: boolean;
+  owner_business_name?: string;
   created_at: string;
 }
 
@@ -44,6 +51,8 @@ export interface SearchUserResult {
   bio: string;
   profile_image_url: string;
   address: string;
+  is_business?: boolean;
+  business_name?: string;
 }
 
 export interface SearchCommunityResult {
@@ -52,6 +61,19 @@ export interface SearchCommunityResult {
   description: string;
   lake_name: string;
   member_count: number;
+}
+
+export interface AdOut {
+  id: string;
+  title: string;
+  body: string;
+  ad_type: 'post' | 'marketplace';
+  image?: string;
+  link_url?: string;
+  status: string;
+  owner_username: string;
+  business_name?: string;
+  created_at: string;
 }
 
 // ── Auth header helper ────────────────────────────────────────────────────────
@@ -142,6 +164,12 @@ export const api = {
       get: (userId: string) => api.get<MessageOut[]>(`/messages/${userId}`),
       send: (userId: string, content: string) => api.post<MessageOut>(`/messages/${userId}`, { content }),
     },
+    ads: {
+      submit: (body: { title: string; body: string; ad_type?: string; image?: string; link_url?: string }) =>
+        api.post<AdOut>('/ads', body),
+      listApproved: () => api.get<AdOut[]>('/ads'),
+      listMine: () => api.get<AdOut[]>('/ads/mine'),
+    },
 };
 
 export interface MessageOut {
@@ -166,6 +194,8 @@ export interface ConnectionProfile {
   bio: string;
   address: string;
   profile_image_url: string;
+  is_business?: boolean;
+  business_name?: string;
 }
 
 export type ConnectionStatus = 

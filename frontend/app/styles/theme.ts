@@ -22,38 +22,44 @@ export const scaleHeight = (size: number) => {
 
 // ─── Unified Colors ──────────────────────────────────────────────────────────
 export const COLORS = {
-  primary: "#476E8D",
-  primaryDark: "#3a5a73", 
-  secondary: "#9CB2C3",
-  background: "#f2f2f2",
-  backgroundWhite: "#ffffff",
-  offWhite: "#FFF6F6",
+  // Brand / Main Colors
+  primary: "#1A5F7A",       // Deep Lake Blue
+  primaryDark: "#0B2B40",   // Near Black Navy
+  secondary: "#159895",     // Teal Water
+  accent: "#54BAB9",        // Light Teal
+  background: "#F2F5F9",    // Very light blue-gray
+  surface: "#FFFFFF",
   
-  white: "#ffffff",
-  black: "#000000",
+  // Typography
+  white: "#FFFFFF",
+  black: "#111827",         // Near Black
+  text: "#1F2937",          // Dark Gray
+  textMuted: "#6B7280",
+  textLight: "#9CA3AF",
   
-  text: "#222222",
-  textMuted: "#666666",
-  textLight: "#888888",
+  // States / Indicators
+  success: "#10B981",       // Modern Emerald
+  error: "#EF4444",         // Modern Red
+  warning: "#F59E0B",       // Modern Amber
+  info: "#3B82F6",          // Modern Blue
   
-  border: "#dddddd",
-  borderLight: "#eeeeee",
-  
-  success: "#2e7d32",
-  error: "#e53935",
-  warning: "#e65100",
-  info: "#1976d2",
+  // Borders / Dividers
+  border: "#E5E7EB",
+  borderLight: "#F3F4F6",
+  borderFocused: "#1A5F7A",
 
-  // Legacy/Specific UI colors
-  mutedText: "#6b7280",
-  orange: "#e65100",
-  darkOrange: "#bf360c",
-  blue: "#187bcd",
-  lightBlue: "#e3f2fd",
-  lightGray: "#f5f5f5",
-  gray: "#aaaaaa",
-  darkGray: "#555555",
-  darkerGray: "#333333",
-  lightestGray: "#f0f0f0",
-  danger: "#dc3545",
+  // Legacy mappings for backward compatibility
+  mutedText: "#6B7280",
+  orange: "#F59E0B",
+  darkOrange: "#B45309",
+  blue: "#1A5F7A",
+  lightBlue: "#E0F2FE",
+  lightGray: "#F9FAFB",
+  gray: "#9CA3AF",
+  darkGray: "#4B5563",
+  darkerGray: "#1F2937",
+  lightestGray: "#F3F4F6",
+  danger: "#EF4444",
+  offWhite: "#F8FAFC",
+  backgroundWhite: "#FFFFFF",
 }

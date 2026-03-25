@@ -9,20 +9,23 @@ export default function ReviewStep() {
   const [editing, setEditing] = useState<keyof RegisterData | null>(null)
 
   return (
-    <View style={s.reviewContainer}>
-      <Text style={s.headerText}>
-        Review and edit your profile before finishing
+    <View style={s.stepContainer}>
+      <Text style={s.titleLarge}>Final Review</Text>
+      <Text style={s.subtitle}>
+        Almost there! Please double-check your details before we set up your account.
       </Text>
 
-      <EditableRow label="Name" field="name" value={data.name} editing={editing} setEditing={setEditing} updateField={updateField} />
-      <EditableRow label="Email" field="email" value={data.email} editing={editing} setEditing={setEditing} updateField={updateField} />
-      <EditableRow label="Address" field="address" value={data.address} editing={editing} setEditing={setEditing} updateField={updateField} />
-      <EditableRow label="Community" field="community" value={data.community} editing={editing} setEditing={setEditing} updateField={updateField} />
-      <EditableRow label="Bio" field="bio" value={data.bio} editing={editing} setEditing={setEditing} updateField={updateField} multiline />
+      <View style={[s.card, { padding: 0, overflow: 'hidden' }]}>
+        <EditableRow label="Display Name" field="name" value={data.name} editing={editing} setEditing={setEditing} updateField={updateField} />
+        <EditableRow label="Email Address" field="email" value={data.email} editing={editing} setEditing={setEditing} updateField={updateField} />
+        <EditableRow label="Home Address" field="address" value={data.address} editing={editing} setEditing={setEditing} updateField={updateField} />
+        <EditableRow label="Community" field="community" value={data.community} editing={editing} setEditing={setEditing} updateField={updateField} />
+        <EditableRow label="Bio" field="bio" value={data.bio} editing={editing} setEditing={setEditing} updateField={updateField} multiline />
+      </View>
 
       {data.interests?.length > 0 && (
-        <View style={s.reviewSection}>
-          <Text style={s.reviewSectionTitle}>Interests</Text>
+        <View style={[s.section, { marginTop: 24 }]}>
+          <Text style={s.titleMedium}>Interests</Text>
           <View style={s.reviewChipsContainer}>
             {data.interests.map((i: string) => (
               <View key={i} style={s.reviewChip}>

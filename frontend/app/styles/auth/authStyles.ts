@@ -1,70 +1,93 @@
-import { StyleSheet } from "react-native"
+import { StyleSheet, Dimensions } from "react-native"
+import { COLORS, scale, isPhone } from "../theme"
 
-export const COLORS = {
-  primary: "#476E8D",
-  secondary: "#9CB2C3",
-  background: "#ffffff",
-  white: "#ffffff",
-  black: "#000000",
-  error: "#e53935",
-  mutedText: "#666666",
-  border: "#dddddd"
-}
+const { width, height } = Dimensions.get('window')
+
+export { COLORS }
 
 export const authStyles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
     backgroundColor: COLORS.background,
-    color: COLORS.black,
   },
-  centered: {
-    justifyContent: "center",
-    alignItems: "center",
+  content: {
+    flex: 1,
+    paddingHorizontal: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  brandContainer: {
+    alignItems: 'center',
+    marginBottom: 48,
+  },
+  brandTitle: {
+    fontSize: scale(32),
+    fontWeight: '800',
+    color: COLORS.primary,
+    letterSpacing: -1,
+    textAlign: 'center',
+  },
+  brandSubtitle: {
+    fontSize: scale(16),
+    color: COLORS.textMuted,
+    marginTop: 8,
+    textAlign: 'center',
+  },
+  welcomeText: {
+    fontSize: scale(22),
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: 32,
+    textAlign: 'center',
+  },
+  buttonContainer: {
+    width: '100%',
+    maxWidth: 400,
+    gap: 16,
   },
   title: {
-    fontSize: 22,
-    fontWeight: "600",
-    marginBottom: 20,
+    fontSize: scale(24),
+    fontWeight: "700",
+    color: COLORS.primary,
+    marginBottom: 24,
     textAlign: "center",
-  },
-  subtitle: {
-    fontSize: 16,
-    
-    marginBottom: 20,
-  },
-  field: {
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    padding: 12,
-    marginBottom: 12,
-    borderRadius: 8,
-    backgroundColor: COLORS.white,
-    fontSize: 15,
   },
   label: {
     fontSize: 14,
-    marginBottom: 6,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginBottom: 8,
+    marginLeft: 4,
+  },
+  field: {
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 12,
+    padding: 16,
+    fontSize: 16,
+    color: COLORS.text,
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   errorText: {
     color: COLORS.error,
-    marginTop: 5,
     fontSize: 13,
-  },
-  messageText: {
-    marginTop: 10,
-    color: COLORS.error,
-    fontSize: 14,
+    marginTop: -8,
+    marginBottom: 16,
+    marginLeft: 4,
   },
   linkContainer: {
-    marginTop: 20,
+    marginTop: 24,
+    alignItems: 'center',
   },
   linkText: {
-    textAlign: "center",
     color: COLORS.primary,
-    fontSize: 14,
-  },
-  loadingContainer: {
-    marginTop: 20,
+    fontSize: 15,
+    fontWeight: '600',
   },
 })

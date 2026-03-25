@@ -36,6 +36,8 @@ class SearchItemResult:
         self.image = item.image or ""
         self.owner_id = str(item.owner_id)
         self.owner_username = owner.username if owner else "unknown"
+        self.owner_is_business = owner.is_business if owner else False
+        self.owner_business_name = owner.business_name if owner else None
         self.created_at = item.created_at.isoformat() if item.created_at else ""
 
     def to_dict(self):
@@ -48,6 +50,8 @@ class SearchItemResult:
             "image": self.image,
             "owner_id": self.owner_id,
             "owner_username": self.owner_username,
+            "owner_is_business": getattr(self, "owner_is_business", False),
+            "owner_business_name": getattr(self, "owner_business_name", None),
             "created_at": self.created_at,
         }
 
@@ -59,6 +63,8 @@ class SearchUserResult:
         self.bio = profile.bio or ""
         self.profile_image_url = profile.profile_image_url or ""
         self.address = profile.address or ""
+        self.is_business = profile.is_business or False
+        self.business_name = profile.business_name or ""
 
     def to_dict(self):
         return {
@@ -67,6 +73,8 @@ class SearchUserResult:
             "bio": self.bio,
             "profile_image_url": self.profile_image_url,
             "address": self.address,
+            "is_business": self.is_business,
+            "business_name": self.business_name,
         }
 
 

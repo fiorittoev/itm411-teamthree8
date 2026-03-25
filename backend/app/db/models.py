@@ -80,6 +80,8 @@ class Profile(Base):
     bio = Column(Text)
     address = Column(Text)
     profile_image_url = Column(String)
+    is_business = Column(Boolean, default=False, nullable=False, server_default='false')
+    business_name = Column(String, nullable=True)
     created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
 
     communities = relationship(
@@ -203,3 +205,36 @@ class Message(Base):
 
     sender = relationship("Profile", foreign_keys=[sender_id], backref="sent_messages")
     receiver = relationship("Profile", foreign_keys=[receiver_id], backref="received_messages")
+
+
+class AdStatus(enum.Enum):
+    PENDING = "pending"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+
+
+class AdType(enum.Enum):
+    POST = "post"
+    MARKETPLACE = "marketplace"
+
+
+class Ad(Base):
+    __tablename__ = "ads"
+
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        server_default=text("gen_random_uuid()"),
+    )
+    owner_id = Column(UUID(as_uuid=True), ForeignKey("profiles.id"), nullable=False)
+    title = Column(String, nullable=False)
+    body = Column(Text, nullable=False)
+    image = Column(Text, nullable=True)      # base64 or URL
+    link_url = Column(String, nullable=True)
+    status = Column(Enum(AdStatus), default=AdStatus.PENDING, nullable=False)
+    ad_type = Column(Enum(AdType), default=AdType.POST, nullable=False)
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    approved_at = Column(TIMESTAMP(timezone=True), nullable=True)
+
+    owner = relationship("Profile", backref="ads")

@@ -14,6 +14,7 @@ from app.routers.posts_items import PostType, ItemCategory
 from app.routers.search import router as search_router
 from app.routers.connections import router as connections_router
 from app.routers.messages import router as messages_router
+from app.routers.ads import router as ads_router
 from pydantic import BaseModel
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
@@ -26,7 +27,12 @@ Base.metadata.create_all(bind=engine)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # tighten this in production
+    allow_origins=[
+        "http://localhost:8081",
+        "http://localhost:8080",
+        "http://localhost:8082",
+        "http://localhost:19006",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -38,6 +44,7 @@ app.include_router(posts_items_router)
 app.include_router(search_router)
 app.include_router(connections_router)
 app.include_router(messages_router)
+app.include_router(ads_router)
 
 
 # ─── Core routes ──────────────────────────────────────────────────────────────
@@ -110,7 +117,7 @@ async def nearby_lakes(lat: float = Query(...), lng: float = Query(...)):
             "https://maps.googleapis.com/maps/api/place/nearbysearch/json",
             params={
                 "location": f"{lat},{lng}",
-                "radius": 80000,
+                "rankby": "distance",
                 "type": "natural_feature",
                 "keyword": "lake",
                 "key": settings.GOOGLE_MAPS_API_KEY,
@@ -120,67 +127,7 @@ async def nearby_lakes(lat: float = Query(...), lng: float = Query(...)):
     return {"results": (data.get("results") or [])[:5]}
 
 
-@app.get("/profile/me")
-def get_my_profile(user=Depends(get_current_user), db: Session = Depends(get_db)):
-    profile = db.query(Profile).filter(Profile.id == user["sub"]).first()
-    if not profile:
-        profile = Profile(
-            id=user["sub"],
-            email=user.get("email", ""),
-            username=user.get("email", "").split("@")[0],
-        )
-        db.add(profile)
-        db.commit()
-        db.refresh(profile)
-    return {
-        "id": str(profile.id),
-        "email": profile.email,
-        "username": profile.username,
-        "bio": profile.bio,
-        "address": profile.address,
-        "community": profile.communities[0].name if profile.communities else None,
-        "community_id": str(profile.communities[0].id) if profile.communities else None,
-    }
-
-
-@app.patch("/profile/me")
-def update_my_profile(
-    updates: dict, user=Depends(get_current_user), db: Session = Depends(get_db)
-):
-    profile = db.query(Profile).filter(Profile.id == user["sub"]).first()
-
-    # Handle community separately — it's a relationship, not a column
-    if "community" in updates:
-        community_name = updates.pop("community")
-        updates.pop("community_id", None)  # discard if frontend sent it
-        if community_name:
-            community = (
-                db.query(Community).filter(Community.name == community_name).first()
-            )
-            if not community:
-                community = Community(name=community_name, lake_name=community_name)
-                db.add(community)
-                db.flush()
-            profile.communities = [community]  # replace existing
-        else:
-            profile.communities = []
-
-    # Set remaining scalar fields
-    for key, value in updates.items():
-        if hasattr(profile, key):
-            setattr(profile, key, value)
-
-    db.commit()
-    db.refresh(profile)
-    return {
-        "id": str(profile.id),
-        "email": profile.email,
-        "username": profile.username,
-        "bio": profile.bio,
-        "address": profile.address,
-        "community": profile.communities[0].name if profile.communities else None,
-        "community_id": str(profile.communities[0].id) if profile.communities else None,
-    }
+# Profiles are now handled by posts_items_router
 
 
 class RegisterRequest(BaseModel):
@@ -190,7 +137,10 @@ class RegisterRequest(BaseModel):
     address: str | None = None
     community: str | None = None
     bio: str | None = None
+    profile_image_url: str | None = None
     items: list[dict] | None = None
+    is_business: bool = False
+    business_name: str | None = None
 
 
 @app.post("/register")
@@ -223,6 +173,9 @@ async def register(body: RegisterRequest, db: Session = Depends(get_db)):
         username=body.username,
         address=body.address,
         bio=body.bio,
+        profile_image_url=body.profile_image_url,
+        is_business=body.is_business,
+        business_name=body.business_name if body.is_business else None,
     )
     db.add(profile)
     db.flush()  # get profile.id into session before linking community
