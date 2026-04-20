@@ -186,11 +186,35 @@ RESEND_API_KEY=your-resend-api-key
 API_BASE_URL=http://localhost:8000
 ```
 
-**Email Configuration Note (Using Resend):**
-1. Sign up free at [resend.com](https://resend.com)
-2. Get your API key from the dashboard
-3. Set `RESEND_API_KEY` in your `.env` file
-4. Set `ADMIN_EMAIL` to receive ad approval notifications
+##### Email Setup (Resend)
+
+The application uses **Resend** for sending ad approval notification emails. This is configured for the `/ads` endpoint to notify admins when a business submits an ad.
+
+**Setup Steps:**
+
+1. **Create a Resend account** (free)
+   - Go to [resend.com](https://resend.com)
+   - Sign up for a free account
+   - Navigate to the API Keys section in your dashboard
+
+2. **Get your API Key**
+   - Copy your API key from the Resend dashboard
+   - Paste it into your `backend/.env` file as `RESEND_API_KEY`
+
+3. **Configure sender email**
+   - By default, emails are sent from `onboarding@resend.dev` (Resend's default domain)
+   - To customize the sender domain:
+     - Add your domain in [Resend Dashboard](https://resend.com) and complete domain verification
+     - Update the `"from"` field in `backend/app/routers/ads.py` `send_approval_email()` function
+
+4. **Set admin email**
+   - Update `ADMIN_EMAIL` in your `.env` to the email address that should receive ad approval requests
+   - Example: `ADMIN_EMAIL=fiorittoev@gmail.com`
+
+**How it works:**
+- When a business submits an ad via the `/ads` POST endpoint, an email is automatically sent to the `ADMIN_EMAIL` address
+- The email includes the ad details, business information, and approval/rejection links
+- If `RESEND_API_KEY` is not set, the email sending is skipped silently (ads still submit successfully)
 
 #### Frontend `.env` file
 Create `frontend/.env`:
