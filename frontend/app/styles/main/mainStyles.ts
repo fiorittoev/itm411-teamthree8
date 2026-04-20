@@ -1,13 +1,33 @@
-import { StyleSheet, Dimensions } from "react-native"
+// Main styles barrel export - imports from specialized style modules
+import { isSmallPhone, isPhone, isTablet, scale, scaleHeight, width, COLORS, SPACING, TYPOGRAPHY } from "../theme"
 
-import { isSmallPhone, isPhone, isTablet, scale, scaleHeight, width } from "../theme"
-export { isSmallPhone, isPhone, isTablet, scale, scaleHeight, width }
+// Import all style modules
+import { commonStyles } from "./common"
+import { homeStyles } from "./homeScreen"
+import { marketplaceStyles } from "./marketplace"
+import { formStyles } from "./forms"
+import { modalStyles } from "./modals"
+import { detailModalStyles } from "./detailModal"
+import { profileStyles } from "./profile"
+import { settingsStyles } from "./settings"
+import { searchStyles } from "./search"
+import { addressAndCommunityStyles } from "./addressAndCommunity"
+import { communityPostsStyles } from "./communityPosts"
+import { deleteModalStyles } from "./deleteModals"
+import { connectionStyles } from "./connections"
+import { postModalStyles } from "./postModal"
+import { adStyles } from "./ads"
+import { helperStyles } from "./helpers"
+import { responsiveStyles } from "./responsive"
+import { tabletStyles } from "./tablet"
+import { smallPhoneStyles } from "./smallPhone"
 
-export const mainStyles = StyleSheet.create({
+// Re-export all styles combined into a single mainStyles object
+export const mainStyles = {
   // ─── Common ──────────────────────────────────────────────────────────────────
   safe: { 
     flex: 1, 
-    backgroundColor: '#f2f2f2',
+    backgroundColor: COLORS.background,
     width: '100%',
     maxWidth: 1200,
     alignSelf: 'center',
@@ -21,26 +41,26 @@ export const mainStyles = StyleSheet.create({
   },
   navbar: { 
     height: 56,
-    backgroundColor: '#4F728C', 
+    backgroundColor: COLORS.secondaryDark, 
     flexDirection: 'row', 
     alignItems: 'center', 
-    paddingHorizontal: 16
+    paddingHorizontal: SPACING.lg
   },
   communityDescription: {
   fontSize: 13,
-  color: '#666',
+  color: COLORS.textMuted,
   marginTop: 2,
 },
 communityMemberCount: {
   fontSize: 12,
-  color: '#888',
+  color: COLORS.textLight,
   marginTop: 2,
 },
   logo: { 
-    color: 'white', 
+    color: COLORS.white, 
     fontSize: 17, 
     fontWeight: '700',
-    marginRight: 12
+    marginRight: SPACING.md
   },
   navIcons: { 
     flex: 1,
@@ -53,52 +73,52 @@ communityMemberCount: {
     height: 36,
     borderRadius: 18, 
     borderWidth: 2, 
-    borderColor: 'white', 
+    borderColor: COLORS.white, 
     alignItems: 'center',
     justifyContent: 'center'
   },
   body: { 
     flex: 1, 
     flexDirection: 'row', 
-    gap: 10, 
-    padding: 10 
+    gap: SPACING.sm, 
+    padding: SPACING.sm 
   },
   
   // ─── Home Screen ─────────────────────────────────────────────────────────────
   leftPanel: { 
     width: 190, 
-    backgroundColor: 'white', 
+    backgroundColor: COLORS.surface, 
     borderRadius: 8, 
-    padding: 12 
+    padding: SPACING.md 
   },
   panelTitle: { 
     fontSize: 15, 
     fontWeight: '700', 
-    marginBottom: 8, 
-    color: '#222' 
+    marginBottom: SPACING.sm, 
+    color: COLORS.text 
   },
   filterRow: { 
     flexDirection: 'row', 
-    gap: 6,
-    marginBottom: 10, 
+    gap: SPACING.xs,
+    marginBottom: SPACING.sm, 
     flexWrap: 'wrap' 
   },
   filterBtn: { 
-    backgroundColor: '#9fb7c8', 
-    paddingHorizontal: 10, 
-    paddingVertical: 4, 
+    backgroundColor: COLORS.secondaryLight, 
+    paddingHorizontal: SPACING.sm, 
+    paddingVertical: SPACING.xs, 
     borderRadius: 20 
   },
   filterBtnText: { 
     fontSize: 12, 
-    color: '#fff', 
+    color: COLORS.white, 
     fontWeight: '600'
   },
   listingGrid: { 
     flex: 1, 
     flexDirection: 'row', 
     flexWrap: 'wrap', 
-    gap: 6 
+    gap: SPACING.xs 
   },
   listingCard: { 
     width: (190 - 24 - 6) / 2,
@@ -106,7 +126,7 @@ communityMemberCount: {
     borderRadius: 8, 
     overflow: 'hidden', 
     borderWidth: 1,
-    borderColor: '#ccc', 
+    borderColor: COLORS.borderDark, 
     position: 'relative' 
   },
   previewImg: { 
@@ -123,25 +143,25 @@ communityMemberCount: {
     borderRadius: 5
   },
   previewPriceText: { 
-    color: 'white', 
+    color: COLORS.white, 
     fontSize: 11, 
     fontWeight: '700'
   },
   shopBtn: { 
-    marginTop: 10,
-    backgroundColor: '#9fb7c8',
+    marginTop: SPACING.sm,
+    backgroundColor: COLORS.secondaryLight,
     borderRadius: 8,
-    paddingVertical: 10,
+    paddingVertical: SPACING.sm,
     alignItems: 'center'
   },
   shopBtnText: { 
-    color: '#fff', 
+    color: COLORS.white, 
     fontWeight: '700',
     fontSize: 13
   },
   feed: { 
     flex: 1, 
-    backgroundColor: 'white', 
+    backgroundColor: COLORS.surface, 
     borderRadius: 8, 
     overflow: 'hidden' 
   },
@@ -149,67 +169,67 @@ communityMemberCount: {
     flexDirection: 'row', 
     justifyContent: 'space-between', 
     alignItems: 'center', 
-    padding: 14,
+    padding: SPACING.md,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee'
+    borderBottomColor: COLORS.borderLight
   },
   feedTitle: {
     fontSize: 16, 
     fontWeight: '700', 
-    color: '#222'
+    color: COLORS.text
   },
   addBtn: {
     width: 32, 
     height: 32,
     borderRadius: 6, 
     borderWidth: 1, 
-    borderColor: '#333', 
+    borderColor: COLORS.text, 
     alignItems: 'center', 
     justifyContent: 'center'
   },
   addBtnText: { 
     fontSize: 20, 
-    color: '#333', 
+    color: COLORS.text, 
     lineHeight: 24 
   },
   postBox: { 
-    backgroundColor: '#e0e0e0', 
+    backgroundColor: COLORS.backgroundLight, 
     borderRadius: 8,
-    padding: 14, 
-    marginBottom: 12, 
+    padding: SPACING.md, 
+    marginBottom: SPACING.md, 
     paddingBottom: 36 
   },
   postTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#333',
-    marginBottom: 8,
+    color: COLORS.text,
+    marginBottom: SPACING.sm,
   },
   postLabel: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#555',
-    marginBottom: 4,
+    color: COLORS.textMuted,
+    marginBottom: SPACING.xs,
   },
   postHeader: { 
     flexDirection: 'row', 
     justifyContent: 'space-between', 
     alignItems: 'baseline',
-    marginBottom: 6 
+    marginBottom: SPACING.xs 
   },
   postAuthor: {
     fontWeight: '700', 
     fontSize: 13,
-    color: '#333'
+    color: COLORS.text
   },
   postTime: { 
     fontSize: 11, 
-    color: '#666' 
+    color: COLORS.textMuted 
   },
   postText: { 
     fontSize: 14, 
     lineHeight: 20,
-    color: '#222'
+    color: COLORS.text
   },
   deleteBtn: {
     position: 'absolute',
@@ -218,33 +238,33 @@ communityMemberCount: {
   },
   rightPanel: {
     width: 80, 
-    backgroundColor: 'white', 
+    backgroundColor: COLORS.surface, 
     borderRadius: 8,
-    padding: 12,
+    padding: SPACING.md,
     alignItems: 'center', 
     paddingTop: 20, 
     gap: 30
   },
   sideItem: {
     alignItems: 'center', 
-    gap: 4 
+    gap: SPACING.xs 
   },
   sideLabel: { 
     fontSize: 12, 
-    color: '#333' 
+    color: COLORS.text 
   },
   emptyText: { 
-    color: '#aaa', 
+    color: COLORS.textLight, 
     fontSize: 12, 
     textAlign: 'center', 
-    marginTop: 10 
+    marginTop: SPACING.sm 
   },
   
   // ─── Marketplace Screen ───────────────────────────────────────────────────────
   marketplace: { 
     flex: 1, 
-    margin: 15, 
-    backgroundColor: 'white', 
+    margin: isPhone ? SPACING.md : 15, 
+    backgroundColor: COLORS.surface, 
     borderRadius: 8, 
     overflow: 'hidden'
   },
@@ -252,68 +272,70 @@ communityMemberCount: {
     flexDirection: 'row', 
     justifyContent: 'space-between', 
     alignItems: 'center',
-    padding: 14, 
+    padding: SPACING.md, 
     borderBottomWidth: 1, 
-    borderBottomColor: '#eee' 
+    borderBottomColor: COLORS.borderLight
   },
   headerLeft: { 
     flexDirection: 'row', 
     alignItems: 'center',
-    gap: 14, 
+    gap: SPACING.md, 
     flex: 1, 
     flexWrap: 'wrap'
   },
   marketTitle: { 
-    fontSize: 17, 
+    fontSize: isPhone ? 16 : 18, 
     fontWeight: '700', 
-    color: '#222' 
+    color: COLORS.text 
   },
   filterBtnActive: { 
-    backgroundColor: '#4F728C'
+    backgroundColor: COLORS.secondaryDark
   },
   gridContent: { 
-    padding: 14, 
-    paddingBottom: 30 
+    padding: isPhone ? SPACING.sm : SPACING.md, 
+    paddingBottom: SPACING.xl
   },
   gridRow: { 
-    gap: 14, 
-    marginBottom: 14
+    flexDirection: 'row',
+    gap: isPhone ? SPACING.xs : SPACING.sm, 
   },
   card: { 
-    flex: 1, 
-    width: "33%",
-    maxWidth: "10%",
+    flex: 1,
+    maxWidth: isPhone ? 200 : 300,
   },
   cardImg: {
     width: '100%', 
-    aspectRatio: 1, 
+    aspectRatio: isPhone ? 1 : 0.85,
     borderRadius: 10, 
-    marginBottom: 6
+    marginBottom: isPhone ? SPACING.xs : 0,
+    backgroundColor: COLORS.backgroundLight,
   },
   cardInfo: {
     flexDirection: 'row', 
     justifyContent: 'space-between', 
-    alignItems: 'flex-start' 
+    alignItems: 'flex-start',
+    paddingHorizontal: SPACING.xs,
+    paddingVertical: isPhone ? 0 : SPACING.xs,
   },
   cardText: { 
     flex: 1,
-    gap: 2
+    gap: SPACING.xs
   },
   cardName: { 
-    fontSize: 13,
+    fontSize: isPhone ? 12 : 13, 
     fontWeight: '500', 
-    color: '#111' 
+    color: COLORS.text 
   },
   cardPrice: { 
-    fontSize: 13, 
+    fontSize: isPhone ? 12 : 13, 
     fontWeight: '700', 
-    color: '#000'
+    color: COLORS.primary
   },
   cardFav: { 
-    fontSize: 18, 
-    color: '#000', 
-    marginLeft: 4, 
-    marginTop: 2 
+    fontSize: 16, 
+    color: COLORS.text, 
+    marginLeft: SPACING.xs, 
+    marginTop: 0
   },
   
   // ─── Modals ───────────────────────────────────────────────────────────────────
@@ -331,23 +353,23 @@ communityMemberCount: {
     width: '100%' 
   },
   modalBox: { 
-    backgroundColor: 'white',
+    backgroundColor: COLORS.surface,
     width: '85%', 
     maxWidth: 480, 
     borderRadius: 12, 
-    padding: 22, 
-    gap: 14
+    padding: SPACING.xl, 
+    gap: SPACING.lg
   },
   modalTitle: { 
     fontSize: 17, 
     fontWeight: '700', 
     textAlign: 'center', 
-    color: '#222' 
+    color: COLORS.text 
   },
   modalActions: { 
     flexDirection: 'row', 
-    gap: 10,
-    marginTop: 4 
+    gap: SPACING.sm,
+    marginTop: SPACING.xs 
   },
   btn: { 
     flex: 1, 
@@ -356,21 +378,21 @@ communityMemberCount: {
     alignItems: 'center' 
   },
   btnCancel: { 
-    backgroundColor: '#ddd'
+    backgroundColor: COLORS.borderLight
   },
   btnCancelText: {
-    color: '#333',
+    color: COLORS.text,
     fontWeight: '600',
     fontSize: 15 
   },
   btnBlue: {
-    backgroundColor: '#187bcd'
+    backgroundColor: COLORS.primary
   },
   btnRed: { 
-    backgroundColor: '#dc3545' 
+    backgroundColor: COLORS.error 
   },
   btnText: { 
-    color: 'white', 
+    color: COLORS.white, 
     fontWeight: '700', 
     fontSize: 15
   },
@@ -378,11 +400,11 @@ communityMemberCount: {
   // ─── Forms ────────────────────────────────────────────────────────────────────
   input: { 
     borderWidth: 1, 
-    borderColor: '#ccc', 
+    borderColor: COLORS.borderDark, 
     borderRadius: 8, 
-    padding: 10, 
-    fontSize: 15, 
-    color: '#222' 
+    padding: SPACING.sm, 
+    fontSize: TYPOGRAPHY.body.fontSize, 
+    color: COLORS.text 
   },
   textarea: { 
     minHeight: 70, 
@@ -390,16 +412,16 @@ communityMemberCount: {
   },
   postInput: { 
     borderWidth: 1, 
-    borderColor: '#ccc',
+    borderColor: COLORS.borderDark,
     borderRadius: 8,
-    padding: 10, 
-    fontSize: 15, 
+    padding: SPACING.sm, 
+    fontSize: TYPOGRAPHY.body.fontSize, 
     minHeight: 90, 
     textAlignVertical: 'top' 
   },
   imagePicker: { 
     borderWidth: 1, 
-    borderColor: '#ccc', 
+    borderColor: COLORS.borderDark, 
     borderRadius: 8, 
     overflow: 'hidden' 
   },
@@ -407,12 +429,12 @@ communityMemberCount: {
     height: 100, 
     alignItems: 'center', 
     justifyContent: 'center', 
-    gap: 8, 
-    backgroundColor: '#fafafa'
+    gap: SPACING.sm, 
+    backgroundColor: COLORS.backgroundLight
   },
   imagePlaceholderText: { 
-    color: '#888', 
-    fontSize: 14 
+    color: COLORS.textLight, 
+    fontSize: TYPOGRAPHY.body.fontSize 
   },
   imagePreview: { 
     width: '100%', 
@@ -421,7 +443,7 @@ communityMemberCount: {
   
   // ─── Detail Modal ────────────────────────────────────────────────────────────
   detailBox: {
-    backgroundColor: 'white', 
+    backgroundColor: COLORS.surface, 
     width: '92%', 
     maxWidth: 700, 
     maxHeight: '88%', 
@@ -435,100 +457,100 @@ communityMemberCount: {
   },
   detailInfo: { 
     flex: 1, 
-    padding: 18 
+    padding: SPACING.lg 
   },
   detailName: { 
     fontSize: 20, 
     fontWeight: '700', 
-    color: '#111' 
+    color: COLORS.text 
   },
   detailPrice: {
     fontSize: 18, 
     fontWeight: '700', 
-    color: '#222' 
+    color: COLORS.text 
   },
   detailSeller: { 
     fontSize: 13, 
-    color: '#666' 
+    color: COLORS.textMuted 
   },
   detailDesc: {
     fontSize: 14, 
-    color: '#333', 
+    color: COLORS.text, 
     lineHeight: 20 
   },
   favBtn: { 
     borderWidth: 1, 
-    borderColor: '#ccc', 
+    borderColor: COLORS.borderDark, 
     borderRadius: 8, 
-    paddingVertical: 8, 
+    paddingVertical: SPACING.sm, 
     alignItems: 'center'
   },
   favBtnText: {
     fontSize: 15, 
-    color: '#333' 
+    color: COLORS.text 
   },
   contactBox: { 
     borderTopWidth: 1, 
-    borderTopColor: '#eee', 
-    paddingTop: 8, 
-    gap: 3 
+    borderTopColor: COLORS.borderLight, 
+    paddingTop: SPACING.sm, 
+    gap: SPACING.xs 
   },
   contactTitle: { 
     fontWeight: '700', 
     fontSize: 14, 
-    marginBottom: 2, 
-    color: '#222' 
+    marginBottom: SPACING.xs, 
+    color: COLORS.text 
   },
   contactText: { 
     fontSize: 13, 
-    color: '#555' 
+    color: COLORS.textMuted 
   },
 
   // ─── Profile Screen ──────────────────────────────────────────────────────────
   profilePanel: {
     flex: 1,
-    margin: 12,
-    backgroundColor: 'white',
+    margin: SPACING.md,
+    backgroundColor: COLORS.surface,
     borderRadius: 8,
     overflow: 'hidden',
   },
   profileHeader: {
     alignItems: 'center',
-    paddingVertical: 24,
-    paddingHorizontal: 16,
+    paddingVertical: SPACING.xl,
+    paddingHorizontal: SPACING.lg,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: COLORS.borderLight,
   },
   profileAvatar: {
     width: 88,
     height: 88,
     borderRadius: 44,
-    backgroundColor: '#9fb7c8',
+    backgroundColor: COLORS.secondaryLight,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 12,
+    marginBottom: SPACING.md,
   },
   profileName: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#222',
-    marginBottom: 4,
+    color: COLORS.text,
+    marginBottom: SPACING.xs,
   },
   profileMeta: {
     fontSize: 13,
-    color: '#666',
+    color: COLORS.textMuted,
   },
   profileBody: {
-    padding: 16,
-    gap: 12,
+    padding: SPACING.lg,
+    gap: SPACING.md,
   },
   profileRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    paddingVertical: 10,
+    gap: SPACING.sm,
+    paddingVertical: SPACING.sm,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: COLORS.backgroundLight,
   },
   profileRowIcon: {
     width: 36,
@@ -536,24 +558,24 @@ communityMemberCount: {
   },
   profileRowLabel: {
     fontSize: 12,
-    color: '#666',
-    marginBottom: 2,
+    color: COLORS.textMuted,
+    marginBottom: SPACING.xs,
   },
   profileRowValue: {
     fontSize: 15,
     fontWeight: '500',
-    color: '#222',
+    color: COLORS.text,
     flex: 1,
   },
   profileAction: {
-    marginTop: 16,
-    backgroundColor: '#9fb7c8',
+    marginTop: SPACING.lg,
+    backgroundColor: COLORS.secondaryLight,
     borderRadius: 8,
-    paddingVertical: 12,
+    paddingVertical: SPACING.md,
     alignItems: 'center',
   },
   profileActionText: {
-    color: '#fff',
+    color: COLORS.white,
     fontWeight: '700',
     fontSize: 15,
   },
@@ -561,13 +583,13 @@ communityMemberCount: {
   // ─── Settings Screen ─────────────────────────────────────────────────────────
   settingsPanel: {
     flex: 1,
-    margin: 12,
-    backgroundColor: 'white',
+    margin: SPACING.md,
+    backgroundColor: COLORS.surface,
     borderRadius: 8,
     overflow: 'hidden',
   },
   settingsContent: {
-    padding: 16,
+    padding: SPACING.lg,
     paddingBottom: 30,
   },
   settingsSection: {
@@ -576,8 +598,8 @@ communityMemberCount: {
   settingsSectionTitle: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#666',
-    marginBottom: 10,
+    color: COLORS.textMuted,
+    marginBottom: SPACING.sm,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
@@ -585,15 +607,15 @@ communityMemberCount: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 12,
-    paddingHorizontal: 4,
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.xs,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: COLORS.backgroundLight,
   },
   settingsRowLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: SPACING.md,
     flex: 1,
   },
   settingsRowText: {
@@ -602,31 +624,31 @@ communityMemberCount: {
   settingsRowLabel: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#222',
+    color: COLORS.text,
   },
   settingsRowValue: {
     fontSize: 14,
-    color: '#555',
-    marginTop: 2,
+    color: COLORS.textMuted,
+    marginTop: SPACING.xs,
   },
   settingsRowSubtext: {
     fontSize: 12,
-    color: '#888',
-    marginTop: 2,
+    color: COLORS.textLight,
+    marginTop: SPACING.xs,
   },
   settingsModal: {
-    backgroundColor: 'white',
+    backgroundColor: COLORS.surface,
     width: '85%',
     maxWidth: 480,
     borderRadius: 12,
-    padding: 22,
-    gap: 14,
+    padding: SPACING.xl,
+    gap: SPACING.lg,
   },
   settingsModalTitle: {
     fontSize: 17,
     fontWeight: '700',
     textAlign: 'center',
-    color: '#222',
+    color: COLORS.text,
   },
 
   // ─── Search Screen ───────────────────────────────────────────────────────────
@@ -864,16 +886,72 @@ communityMemberCount: {
     paddingHorizontal: 24,
   },
   
-  // ─── Form Errors & States ──────────────────────────────────────────────────────
+  // Form Errors & States
   inputError: {
-    borderColor: '#e74c3c',
-    borderWidth: 1,
+    borderColor: COLORS.error,
+    borderWidth: 1.5,
   },
   imagePlaceholderError: {
-    color: '#e74c3c',
+    color: COLORS.error,
   },
   logoutBtn: {
-    backgroundColor: '#c0392b',
+    backgroundColor: COLORS.errorDark,
+  },
+
+  // ─── Additional Shared Styles ─────────────────────────────────────────────────
+  connectionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: SPACING.sm,
+    gap: SPACING.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.backgroundLight,
+  },
+  connectionAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: COLORS.secondaryDark,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  connectionName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+  connectionMeta: {
+    fontSize: 12,
+    color: COLORS.textLight,
+    marginTop: SPACING.xs,
+  },
+  connectionAcceptBtn: {
+    backgroundColor: COLORS.secondaryDark,
+    borderRadius: 6,
+    padding: SPACING.xs,
+  },
+  connectionDeclineBtn: {
+    backgroundColor: COLORS.borderLight,
+    borderRadius: 6,
+    padding: SPACING.xs,
+  },
+  connectionEmpty: {
+    textAlign: 'center',
+    color: COLORS.textLight,
+    marginTop: SPACING.lg,
+    fontSize: 14,
+  },
+
+  // ─── State-specific Colors ────────────────────────────────────────────────────
+  postAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: COLORS.secondaryDark,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
   },
 
   // ─── Content Containers ────────────────────────────────────────────────────────
@@ -1217,49 +1295,6 @@ connectionsPanelTitle: {
   fontWeight: '600',
   color: '#1a1a1a',
 },
-connectionRow: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  paddingVertical: 10,
-  gap: 10,
-  borderBottomWidth: 1,
-  borderBottomColor: '#f0f0f0',
-},
-connectionAvatar: {
-  width: 40,
-  height: 40,
-  borderRadius: 20,
-  backgroundColor: '#4F728C',
-  alignItems: 'center',
-  justifyContent: 'center',
-  overflow: 'hidden',
-},
-connectionName: {
-  fontSize: 14,
-  fontWeight: '600',
-  color: '#1a1a1a',
-},
-connectionMeta: {
-  fontSize: 12,
-  color: '#888',
-  marginTop: 1,
-},
-connectionAcceptBtn: {
-  backgroundColor: '#4F728C',
-  borderRadius: 6,
-  padding: 6,
-},
-connectionDeclineBtn: {
-  backgroundColor: '#e0e0e0',
-  borderRadius: 6,
-  padding: 6,
-},
-connectionEmpty: {
-  textAlign: 'center',
-  color: '#aaa',
-  marginTop: 24,
-  fontSize: 14,
-},
 
   // ─── Post Modal Header ───────────────────────────────────────────────────────
   postModalHeader: {
@@ -1288,331 +1323,47 @@ connectionEmpty: {
     color: '#ccc',
   },
 
-  // ─── Profile & Layout Helpers ───────────────────────────────────────────────
-  profileScrollGrow: {
-    flexGrow: 1,
-  },
-  flexContainer: {
-    flex: 1,
-  },
-  spacerSmallHeight: {
-    height: 20,
-  },
+  ...commonStyles,
+  ...homeStyles,
+  ...marketplaceStyles,
+  ...formStyles,
+  ...modalStyles,
+  ...detailModalStyles,
+  ...profileStyles,
+  ...settingsStyles,
+  ...searchStyles,
+  ...addressAndCommunityStyles,
+  ...communityPostsStyles,
+  ...deleteModalStyles,
+  ...connectionStyles,
+  ...postModalStyles,
+  ...adStyles,
+  ...helperStyles,
+}
 
-  // ─── Delete Confirmation Modal Box ───────────────────────────────────────────
-  deleteConfirmBox: {
-    backgroundColor: 'white',
-    borderRadius: 10,
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    width: '80%',
-    maxWidth: 300,
-  },
-  deleteConfirmButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 6,
-  },
-  deleteConfirmButtonCancel: {
-    backgroundColor: '#f0f0f0',
-  },
-  deleteConfirmButtonDelete: {
-    backgroundColor: '#E67E73',
-  },
+// Re-export all style categories
+export {
+  commonStyles,
+  homeStyles,
+  marketplaceStyles,
+  formStyles,
+  modalStyles,
+  detailModalStyles,
+  profileStyles,
+  settingsStyles,
+  searchStyles,
+  addressAndCommunityStyles,
+  communityPostsStyles,
+  deleteModalStyles,
+  connectionStyles,
+  postModalStyles,
+  adStyles,
+  helperStyles,
+  responsiveStyles,
+  tabletStyles,
+  smallPhoneStyles,
+}
 
-  // ─── Ad Styles ──────────────────────────────────────────────────────────────
-  adCard: {
-    backgroundColor: '#e8f4f8',
-    borderRadius: 12,
-    padding: 16,
-    marginVertical: 12,
-    borderWidth: 1,
-    borderColor: '#d0e2f0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  adCardMarketplace: {
-    backgroundColor: '#f0f9ff',
-    borderColor: '#bae6fd',
-  },
-  adCardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-    paddingBottom: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(79, 114, 140, 0.1)',
-  },
-  adCardBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: 'rgba(79, 114, 140, 0.1)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  adCardSponsored: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#4F728C',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  adCardOwner: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#666',
-  },
-  adPostContent: {
-    gap: 8,
-  },
-  adMarketplaceContent: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  adMarketplaceImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 8,
-    backgroundColor: '#ddd',
-  },
-  adTextContainer: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  adCardTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#222',
-    marginBottom: 4,
-  },
-  adCardBody: {
-    fontSize: 14,
-    lineHeight: 20,
-    color: '#444',
-    marginBottom: 8,
-  },
-  postAvatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#4F728C',
-    justifyContent: 'center',
-    alignItems: 'center',
-    overflow: 'hidden',
-  },
-
-})
-
-// ─── Mobile Responsive Styles ─────────────────────────────────────────────────
-export const responsiveStyles = StyleSheet.create({
-  // Mobile navbar adjustments
-  navbarMobile: {
-    height: scaleHeight(56),
-    paddingHorizontal: isSmallPhone ? 8 : 16,
-  },
-  logoMobile: {
-    fontSize: scale(17),
-    marginRight: isSmallPhone ? 6 : 12,
-  },
-  
-  // Mobile body layout
-  bodyMobile: {
-    flexDirection: isPhone ? 'column' : 'row',
-    gap: isPhone ? 8 : 10,
-    padding: isSmallPhone ? 6 : 10,
-  },
-  
-  // Mobile panels
-  leftPanelMobile: {
-    width: isPhone ? '100%' : 190,
-    height: isPhone ? undefined : undefined,
-    padding: isSmallPhone ? 8 : 12,
-  },
-  rightPanelMobile: {
-    width: isPhone ? '100%' : 80,
-    gap: isPhone ? 16 : 30,
-  },
-  
-  // Mobile listing grid
-  listingCardMobile: {
-    width: isPhone ? (width - 24 - 16 - 6) / 2 : (190 - 24 - 6) / 2,
-    height: isPhone ? (width - 24 - 16 - 6) / 2 : (190 - 24 - 6) / 2,
-  },
-  
-  // Mobile marketplace grid
-  gridContentMobile: {
-    padding: isSmallPhone ? 8 : 14,
-  },
-  gridRowMobile: {
-    gap: isSmallPhone ? 8 : 14,
-  },
-  cardMobile: {
-    flex: 1,
-    maxWidth: isSmallPhone ? 50 : 25,
-  },
-  
-  // Mobile detail modal
-  detailBoxMobile: {
-    width: isPhone ? '95%' : '92%',
-    flexDirection: isPhone ? 'column' : 'row',
-    maxHeight: isPhone ? '90%' : '88%',
-  },
-  
-  // Mobile profile
-  profilePanelMobile: {
-    margin: isSmallPhone ? 6 : 12,
-  },
-  profileHeaderMobile: {
-    paddingVertical: scaleHeight(24),
-    paddingHorizontal: isSmallPhone ? 8 : 16,
-  },
-  profileAvatarMobile: {
-    width: isPhone ? 72 : 88,
-    height: isPhone ? 72 : 88,
-    borderRadius: isPhone ? 36 : 44,
-  },
-  profileNameMobile: {
-    fontSize: scale(20),
-  },
-  
-  // Mobile settings
-  settingsPanelMobile: {
-    margin: isSmallPhone ? 6 : 12,
-  },
-  settingsContentMobile: {
-    padding: isSmallPhone ? 8 : 16,
-  },
-  settingsRowMobile: {
-    paddingVertical: isSmallPhone ? 8 : 12,
-    paddingHorizontal: isSmallPhone ? 2 : 4,
-  },
-  
-  // Mobile search
-  searchPanelMobile: {
-    margin: isSmallPhone ? 6 : 12,
-  },
-  searchHeaderMobile: {
-    padding: isSmallPhone ? 8 : 14,
-    gap: isSmallPhone ? 8 : 12,
-  },
-  filterOptionMobile: {
-    paddingHorizontal: isSmallPhone ? 8 : 12,
-    paddingVertical: 6,
-  },
-  itemResultMobile: {
-    marginBottom: isSmallPhone ? 6 : 10,
-  },
-  userResultMobile: {
-    padding: isSmallPhone ? 8 : 12,
-  },
-  
-  // Mobile modal
-  modalBoxMobile: {
-    width: isSmallPhone ? '90%' : '85%',
-    padding: isSmallPhone ? 14 : 22,
-  },
-  modalTitleMobile: {
-    fontSize: scale(17),
-  },
-  
-  // Mobile forms
-  inputMobile: {
-    padding: isSmallPhone ? 8 : 10,
-    fontSize: scale(15),
-  },
-  postInputMobile: {
-    padding: isSmallPhone ? 8 : 10,
-    minHeight: isSmallPhone ? 70 : 90,
-  },
-  imagePlaceholderMobile: {
-    height: isSmallPhone ? 80 : 100,
-  },
-})
-
-// ─── Tablet Specific Styles ───────────────────────────────────────────────────
-export const tabletStyles = StyleSheet.create({
-  // Tablet multi-column layouts
-  bodyTablet: {
-    flexDirection: 'row',
-    gap: 12,
-    padding: 12,
-  },
-  
-  // Expanded panels
-  leftPanelTablet: {
-    width: 240,
-    padding: 14,
-  },
-  rightPanelTablet: {
-    width: 100,
-  },
-  
-  // Larger grid for tablet
-  gridRowTablet: {
-    gap: 16,
-  },
-  cardTablet: {
-    flex: 1,
-    maxWidth: 30,
-  },
-  
-  // Larger detail view
-  detailBoxTablet: {
-    width: '80%',
-    maxHeight: '80%',
-  },
-  
-  // Larger modals
-  modalBoxTablet: {
-    width: '70%',
-    maxWidth: 600,
-  },
-})
-
-// ─── Small Phone Styles (< 375px) ────────────────────────────────────────────
-export const smallPhoneStyles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: '#f2f2f2',
-  },
-  navbar: {
-    height: 48,
-    paddingHorizontal: 8,
-  },
-  logo: {
-    fontSize: 14,
-    marginRight: 6,
-  },
-  panelTitle: {
-    fontSize: 13,
-    marginBottom: 6,
-  },
-  filterBtn: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-  },
-  filterBtnText: {
-    fontSize: 10,
-  },
-  postBox: {
-    padding: 10,
-    marginBottom: 10,
-  },
-  profilePanel: {
-    margin: 6,
-  },
-  settingsPanel: {
-    margin: 6,
-  },
-  modalBox: {
-    width: '90%',
-    padding: 14,
-  },
-})
+// Re-export theme utilities
+export { isSmallPhone, isPhone, isTablet, scale, scaleHeight, width }
 

@@ -1,26 +1,31 @@
 import { StyleSheet, Dimensions } from "react-native"
 
-import { COLORS, isSmallPhone, isPhone, isTablet, scale, scaleHeight } from "../theme"
-export { COLORS, isSmallPhone, isPhone, isTablet, scale, scaleHeight }
+import { COLORS, SPACING, TYPOGRAPHY, isSmallPhone, isPhone, isTablet, scale, scaleHeight } from "../theme"
+export { COLORS, SPACING, TYPOGRAPHY, isSmallPhone, isPhone, isTablet, scale, scaleHeight }
 
 export const registerStyles = StyleSheet.create({
   // ===== Layout =====
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
-    paddingHorizontal: 24,
+    paddingHorizontal: SPACING.xl,
     paddingTop: 60,
+    width: '100%',
+    maxWidth: 600,
+    alignSelf: 'center',
   },
   stepContainer: {
-    paddingBottom: 20,
+    paddingBottom: SPACING.xl,
+    paddingHorizontal: isPhone ? SPACING.md : SPACING.xl,
+    marginHorizontal: isPhone ? SPACING.md : SPACING.lg,
   },
   section: {
-    marginBottom: 32,
+    marginBottom: SPACING.xxl,
   },
   card: {
     backgroundColor: COLORS.surface,
     borderRadius: 20,
-    padding: 24,
+    padding: SPACING.xl,
     borderWidth: 1,
     borderColor: COLORS.border,
     shadowColor: "#000",
@@ -28,75 +33,76 @@ export const registerStyles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 12,
     elevation: 3,
+    marginHorizontal: isPhone ? SPACING.sm : SPACING.md,
   },
   paddingContainer: {
-    padding: 20,
+    padding: SPACING.xl,
+    marginHorizontal: isPhone ? SPACING.md : SPACING.lg,
   },
   scrollContainer: {
-    padding: 20,
+    padding: SPACING.xl,
+    paddingHorizontal: isPhone ? SPACING.md : SPACING.xl,
+    marginHorizontal: isPhone ? SPACING.md : SPACING.lg,
   },
 
   // ===== Typography =====
   title: {
-    fontSize: 32,
-    fontWeight: "800",
+    ...TYPOGRAPHY.display,
     color: COLORS.primary,
-    marginBottom: 8,
+    marginBottom: SPACING.sm,
     letterSpacing: -0.5,
   },
   titleLarge: {
-    fontSize: 26,
-    fontWeight: "700",
+    ...TYPOGRAPHY.h1,
     color: COLORS.primary,
-    marginBottom: 12,
+    marginBottom: SPACING.md,
   },
   titleMedium: {
-    fontSize: 22,
-    fontWeight: "600",
+    ...TYPOGRAPHY.h2,
     color: COLORS.text,
-    marginBottom: 16,
+    marginBottom: SPACING.lg,
   },
   subtitle: {
-    fontSize: 16,
+    ...TYPOGRAPHY.body,
     color: COLORS.textMuted,
-    marginBottom: 32,
+    marginBottom: SPACING.xxl,
     lineHeight: 24,
   },
   subtitleMedium: {
-    marginBottom: 20,
+    marginBottom: SPACING.xl,
   },
   label: {
     fontSize: 13,
-    color: COLORS.mutedText,
-    marginBottom: 6,
+    color: COLORS.textMuted,
+    marginBottom: SPACING.xs,
   },
   labelSmall: {
     fontSize: 12,
-    color: COLORS.darkGray,
-    marginBottom: 3,
+    color: COLORS.textMuted,
+    marginBottom: SPACING.xs,
   },
   labelMedium: {
     fontSize: 12,
-    color: COLORS.darkGray,
-    marginBottom: 4,
-    marginTop: 4,
+    color: COLORS.textMuted,
+    marginBottom: SPACING.xs,
+    marginTop: SPACING.xs,
   },
   bodyText: {
     fontSize: 15,
-    color: COLORS.black,
+    color: COLORS.text,
   },
   helperText: {
     fontSize: 12,
-    marginTop: 6,
+    marginTop: SPACING.sm,
   },
   errorText: {
     fontSize: 12,
     color: COLORS.error,
-    marginTop: 4,
+    marginTop: SPACING.xs,
   },
   errorTextSmall: {
     color: COLORS.error,
-    marginTop: 5,
+    marginTop: SPACING.xs,
     fontSize: 12,
   },
   successText: {

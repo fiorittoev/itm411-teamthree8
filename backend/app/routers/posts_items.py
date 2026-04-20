@@ -23,29 +23,9 @@ import uuid
 from app.db.session import get_db
 from app.db.models import Post, PostType, Item, ItemCategory, Profile, Community
 from app.core.auth import get_current_user  # returns decoded Supabase JWT payload
+from app.dependencies import get_or_create_profile  # centralized profile creation
 
 router = APIRouter()
-
-
-# ─── Helpers ──────────────────────────────────────────────────────────────────
-
-
-def get_or_create_profile(user: dict, db: Session) -> Profile:
-    email = user.get("email") or user.get("user_metadata", {}).get("email")
-    if not email:
-        raise HTTPException(status_code=400, detail="No email in token")
-
-    profile = db.query(Profile).filter(Profile.email == email).first()
-    if not profile:
-        username = email.split("@")[0]
-        existing = db.query(Profile).filter(Profile.username == username).first()
-        if existing:
-            username = f"{username}_{str(uuid.uuid4())[:6]}"
-        profile = Profile(email=email, username=username)
-        db.add(profile)
-        db.commit()
-        db.refresh(profile)
-    return profile
 
 
 # ─── Schemas ──────────────────────────────────────────────────────────────────
@@ -68,6 +48,9 @@ class PostOut(BaseModel):
     author_username: str
     author_is_business: bool = False
     author_business_name: Optional[str] = None
+    author_profile_image_url: Optional[str] = None
+    community_id: Optional[str] = None
+    community_name: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -92,6 +75,7 @@ class ItemOut(BaseModel):
     owner_username: str
     owner_is_business: bool = False
     owner_business_name: Optional[str] = None
+    owner_profile_image_url: Optional[str] = None
     created_at: str
 
     class Config:
@@ -129,7 +113,12 @@ def create_post(
     db.commit()
     db.refresh(post)
 
-    return _post_out(post, profile)
+    community = None
+    if post.community_id:
+        community = (
+            db.query(Community).filter(Community.id == post.community_id).first()
+        )
+    return _post_out(post, profile, community)
 
 
 @router.get("/posts", response_model=list[PostOut])
@@ -156,13 +145,18 @@ def list_posts(
     else:
         # Global feed: show all posts from all communities by default
         pass
-            
+
     posts = q.order_by(Post.created_at.desc()).limit(100).all()
 
     results = []
     for post in posts:
         author = db.query(Profile).filter(Profile.id == post.author_id).first()
-        results.append(_post_out(post, author))
+        community = None
+        if post.community_id:
+            community = (
+                db.query(Community).filter(Community.id == post.community_id).first()
+            )
+        results.append(_post_out(post, author, community))
     return results
 
 
@@ -214,7 +208,7 @@ def update_my_profile(
         profile.is_business = body.is_business
     if body.business_name is not None:
         profile.business_name = body.business_name
-        
+
     if body.community_id is not None:
         try:
             comm_uuid = uuid.UUID(body.community_id)
@@ -262,18 +256,20 @@ def get_user_profile(
 ):
     # Just to ensure the request is authenticated
     get_or_create_profile(user, db)
-    
+
     try:
         target_uuid = uuid.UUID(user_id)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid user_id")
-        
+
     target_profile = db.query(Profile).filter(Profile.id == target_uuid).first()
     if not target_profile:
         raise HTTPException(status_code=404, detail="Profile not found")
 
     community = target_profile.communities[0].name if target_profile.communities else ""
-    community_id = str(target_profile.communities[0].id) if target_profile.communities else None
+    community_id = (
+        str(target_profile.communities[0].id) if target_profile.communities else None
+    )
 
     return {
         "id": str(target_profile.id),
@@ -324,7 +320,7 @@ def list_items(
 ):
     profile = get_or_create_profile(user, db)
     q = db.query(Item)
-    
+
     # Global marketplace - no community restriction
     items = q.order_by(Item.created_at.desc()).limit(200).all()
     results = []
@@ -355,7 +351,9 @@ def delete_item(
 # ─── Serialisation helpers ────────────────────────────────────────────────────
 
 
-def _post_out(post: Post, author: Optional[Profile]) -> dict:
+def _post_out(
+    post: Post, author: Optional[Profile], community: Optional[Community] = None
+) -> dict:
     return {
         "id": str(post.id),
         "title": post.title,
@@ -367,6 +365,8 @@ def _post_out(post: Post, author: Optional[Profile]) -> dict:
         "author_is_business": author.is_business if author else False,
         "author_business_name": author.business_name if author else None,
         "author_profile_image_url": author.profile_image_url if author else None,
+        "community_id": str(post.community_id) if post.community_id else None,
+        "community_name": community.name if community else None,
     }
 
 

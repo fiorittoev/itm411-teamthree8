@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native"
-import { COLORS } from "./theme"
+import { COLORS, TYPOGRAPHY, SPACING } from "./theme"
 
 export const globalStyles = StyleSheet.create({
   // Common layout utilities
@@ -22,32 +22,57 @@ export const globalStyles = StyleSheet.create({
     alignItems: "center",
   },
   
-  // Common spacing
-  paddingSmall: { padding: 8 },
-  paddingMedium: { padding: 16 },
-  paddingLarge: { padding: 24 },
+  // Spacing utilities
+  paddingXS: { padding: SPACING.xs },
+  paddingSM: { padding: SPACING.sm },
+  paddingMD: { padding: SPACING.md },
+  paddingLG: { padding: SPACING.lg },
+  paddingXL: { padding: SPACING.xl },
   
-  marginSmall: { margin: 8 },
-  marginMedium: { margin: 16 },
-  marginLarge: { margin: 24 },
+  marginXS: { margin: SPACING.xs },
+  marginSM: { margin: SPACING.sm },
+  marginMD: { margin: SPACING.md },
+  marginLG: { margin: SPACING.lg },
+  marginXL: { margin: SPACING.xl },
+  
+  gapXS: { gap: SPACING.xs },
+  gapSM: { gap: SPACING.sm },
+  gapMD: { gap: SPACING.md },
+  gapLG: { gap: SPACING.lg },
+  gapXL: { gap: SPACING.xl },
 
-  gapSmall: { gap: 8 },
-  gapMedium: { gap: 12 },
-  gapLarge: { gap: 16 },
-
-  // Typography
-  title: {
-    fontSize: 22,
-    fontWeight: "600",
+  // Typography using new scale
+  display: {
+    ...TYPOGRAPHY.display,
     color: COLORS.text,
   },
-  subtitle: {
-    fontSize: 16,
+  h1: {
+    ...TYPOGRAPHY.h1,
+    color: COLORS.text,
+  },
+  h2: {
+    ...TYPOGRAPHY.h2,
+    color: COLORS.text,
+  },
+  h3: {
+    ...TYPOGRAPHY.h3,
+    color: COLORS.text,
+  },
+  body: {
+    ...TYPOGRAPHY.body,
+    color: COLORS.text,
+  },
+  bodyStrong: {
+    ...TYPOGRAPHY.bodyStrong,
+    color: COLORS.text,
+  },
+  caption: {
+    ...TYPOGRAPHY.caption,
     color: COLORS.textMuted,
   },
-  text: {
-    fontSize: 14,
-    color: COLORS.text,
+  tiny: {
+    ...TYPOGRAPHY.tiny,
+    color: COLORS.textLight,
   },
   
   // Containers
@@ -61,15 +86,15 @@ export const globalStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
     borderRadius: 8,
-    padding: 12,
-    fontSize: 15,
-    backgroundColor: COLORS.white,
+    padding: SPACING.md,
+    fontSize: TYPOGRAPHY.body.fontSize,
+    backgroundColor: COLORS.surface,
     color: COLORS.text,
   },
   
   // Panels
   panel: {
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.surface,
     borderRadius: 8,
     overflow: "hidden",
   },

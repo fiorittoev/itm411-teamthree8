@@ -163,9 +163,6 @@ def send_request(
         target_uuid = uuid.UUID(user_id)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid user_id")
-    print(f"Current profile.id: {profile.id}")
-    print(f"Target uuid:        {target_uuid}")
-    print(f"Match: {target_uuid == profile.id}")
     if target_uuid == profile.id:
         raise HTTPException(status_code=400, detail="Cannot connect with yourself")
 

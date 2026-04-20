@@ -73,7 +73,7 @@ export default function ProfilePictureStep() {
         ) : (
           <View style={[s.card, { backgroundColor: COLORS.lightBlue, borderColor: COLORS.primary + '20' }]}>
             <Text style={[s.bodyText, { fontSize: 13, color: COLORS.primary, textAlign: 'center' }]}>
-              💡 A friendly photo helps build trust in the community!
+              A friendly photo helps build trust in the community!
             </Text>
           </View>
         )}

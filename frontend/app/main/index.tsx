@@ -8,7 +8,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { api, PostOut, ItemOut } from '../../services/api';
 import { supabase } from '../../services/supabase';
-import { mainStyles as s } from '../styles/main/mainStyles';
+import { mainStyles as s, responsiveStyles as rs } from '../styles/main/mainStyles';
 import { 
   PostCard, ListingCard, Loading, PostModal, 
   DeleteConfirmModal, AdCard, injectAds 
@@ -60,7 +60,6 @@ export default function HomeScreen() {
           const profile = await api.get<{id: string}>('/profile/me');
           setCurrentAuthorId(profile.id);
         } catch (e) {
-          console.warn('Could not fetch profile', e);
         }
       }
     } catch (e: any) {
@@ -92,9 +91,9 @@ export default function HomeScreen() {
   
 
   return (
-    <SafeAreaView style={[s.safe, isMobile && s.safeMobile]}>
+    <SafeAreaView style={[s.safe, isMobile && rs.safeMobile]}>
       {/* BODY */}
-      <View style={[s.body, isMobile && s.bodyMobile]}>
+      <View style={[s.body, isMobile && rs.bodyMobile]}>
         {/* LEFT */}
         {!isMobile && (
           <View style={s.leftPanel}>
@@ -120,7 +119,7 @@ export default function HomeScreen() {
         )}
 
         {/* FEED */}
-        <View style={[s.feed, isMobile && s.feedMobile]}>
+        <View style={[s.feed, isMobile && rs.feedMobile]}>
           <View style={s.feedHeader}>
             <Text style={s.feedTitle}>Posts</Text>
             <TouchableOpacity style={s.addBtn} onPress={() => setPostModalVisible(true)}>
@@ -135,7 +134,7 @@ export default function HomeScreen() {
             ListHeaderComponent={isMobile ? (
               <View>
                 {/* LEFT PANEL on Mobile */}
-                <View style={[s.leftPanel, s.leftPanelMobile]}>
+                <View style={[s.leftPanel, rs.leftPanelMobile]}>
                   <Text style={s.panelTitle}>Local Listings</Text>
                   <View style={s.filterRow}>
                     {['All', 'Yours', 'Faves'].map(label => (
@@ -157,7 +156,7 @@ export default function HomeScreen() {
                 </View>
 
                 {/* RIGHT PANEL on Mobile */}
-                <View style={[s.rightPanel, s.rightPanelMobile]}>
+                <View style={[s.rightPanel, rs.rightPanelMobile]}>
                   <TouchableOpacity style={s.sideItem} onPress={() => setShowConnections(true)}>
                     <Ionicons name="people-outline" size={34} color="#333" />
                     <Text style={s.sideLabel}>Friends</Text>

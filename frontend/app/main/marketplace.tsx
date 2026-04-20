@@ -17,6 +17,7 @@ import { api, ItemOut } from '../../services/api';
 import { supabase } from '../../services/supabase';
 import { mainStyles as s } from '../styles/main/mainStyles';
 import { MarketCard } from '../components/main';
+import { MessagesPanel } from '../components/MessagesPanel';
 type Filter = 'all' | 'yours' | 'favorites';
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
@@ -59,6 +60,11 @@ export default function MarketplaceScreen() {
   const [deleteTargetId, setDeleteTargetId]   = useState<string | null>(null);
   const [deleting, setDeleting]               = useState(false);
 
+  // Messaging
+  const [showMessages, setShowMessages]       = useState(false);
+  const [initialDMId, setInitialDMId]         = useState<string | null>(null);
+  const [initialDMName, setInitialDMName]     = useState<string>('');
+
   // ── Load ──────────────────────────────────────────────────────────────────
 
   useEffect(() => { fetchItems(); }, []);
@@ -80,7 +86,6 @@ export default function MarketplaceScreen() {
           const profile = await api.get<{id: string}>('/profile/me');
           setCurrentAuthorId(profile.id);
         } catch (e) {
-          console.warn('Could not fetch profile in marketplace', e);
         }
       }
     } catch (e: any) {
@@ -235,10 +240,10 @@ export default function MarketplaceScreen() {
         </View>
 
         <FlatList
-          key={isMobile ? 'cols-2' : 'cols-4'}
+          key={isMobile ? 'cols-2' : 'cols-3'}
           data={displayed}
           keyExtractor={i => i.id}
-          numColumns={isMobile ? 2 : 4}
+          numColumns={isMobile ? 2 : 3}
           contentContainerStyle={s.gridContent}
           columnWrapperStyle={s.gridRow}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
@@ -346,7 +351,12 @@ export default function MarketplaceScreen() {
                 >
                   <Text style={s.detailName}>{detailItem.name}</Text>
                   <Text style={s.detailPrice}>${detailItem.price}</Text>
-                  <Text style={s.detailSeller}>Posted by: {detailItem.owner_username}</Text>
+                  <TouchableOpacity 
+                    onPress={() => router.push(`/main/profile/${detailItem.owner_id}`)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={[s.detailSeller, { color: '#0066cc' }]}>Posted by: {detailItem.owner_username}</Text>
+                  </TouchableOpacity>
                   
                   {detailItem.owner_id !== currentAuthorId && (
                     <TouchableOpacity
@@ -363,9 +373,22 @@ export default function MarketplaceScreen() {
                   <Text style={s.detailDesc}>{detailItem.description}</Text>
                   <TouchableOpacity style={s.favBtn} onPress={() => toggleFav(detailItem.id)}>
                     <Text style={s.favBtnText}>
-                      {favorites.includes(detailItem.id) ? '♥ Favorited' : '♡ Favorite'}
+                      {favorites.includes(detailItem.id) ? 'Favorited' : 'Favorite'}
                     </Text>
                   </TouchableOpacity>
+                  {detailItem.owner_id !== currentAuthorId && (
+                    <TouchableOpacity
+                      style={[s.btn, s.btnBlue]}
+                      onPress={() => {
+                        setDetailItem(null);
+                        setInitialDMId(detailItem.owner_id);
+                        setInitialDMName(detailItem.owner_business_name || detailItem.owner_username);
+                        setShowMessages(true);
+                      }}
+                    >
+                      <Text style={s.btnText}>Message Seller</Text>
+                    </TouchableOpacity>
+                  )}
                   {detailItem.owner_id === currentAuthorId && (
                     <TouchableOpacity
                       style={[s.btn, s.btnRed]}
@@ -374,11 +397,6 @@ export default function MarketplaceScreen() {
                       <Text style={s.btnText}>Delete Listing</Text>
                     </TouchableOpacity>
                   )}
-                  <View style={s.contactBox}>
-                    <Text style={s.contactTitle}>Contact Info</Text>
-                    <Text style={s.contactText}>Email: Coming soon</Text>
-                    <Text style={s.contactText}>Phone: Coming soon</Text>
-                  </View>
                   <TouchableOpacity
                     style={[s.btn, s.btnCancel]}
                     onPress={() => setDetailItem(null)}
@@ -391,6 +409,16 @@ export default function MarketplaceScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* ── MESSAGING ── */}
+      {showMessages && (
+        <MessagesPanel 
+          onClose={() => { setShowMessages(false); setInitialDMId(null); setInitialDMName(''); }} 
+          currentUserId={currentAuthorId} 
+          initialChatId={initialDMId || undefined}
+          initialChatName={initialDMName}
+        />
+      )}
 
       {/* ── DELETE CONFIRM ── */}
       <Modal visible={deleteVisible} transparent animationType="fade">

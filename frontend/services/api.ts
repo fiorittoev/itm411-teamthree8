@@ -15,6 +15,8 @@ export interface PostOut {
   author_is_business?: boolean;
   author_business_name?: string;
   author_profile_image_url?: string;
+  community_id?: string;
+  community_name?: string;
 }
 
 export interface ItemOut {
@@ -28,6 +30,7 @@ export interface ItemOut {
   owner_username: string;
   owner_is_business?: boolean;
   owner_business_name?: string;
+  owner_profile_image_url?: string;
   created_at: string;
 }
 

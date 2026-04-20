@@ -67,7 +67,6 @@ export default function LocationStep() {
       const json = await res.json()
       setSuggestions(json.predictions?.slice(0, 5) ?? [])
     } catch (err) {
-      console.error("Autocomplete error:", err)
     }
   }
 
@@ -83,7 +82,6 @@ export default function LocationStep() {
 
       setAddressTaken(!!existing)
     } catch (err) {
-      console.error("Address check error:", err)
     } finally {
       setCheckingAddress(false)
     }
@@ -129,7 +127,6 @@ export default function LocationStep() {
       const { lat, lng } = json.result.geometry.location
       findNearbyLakes(lat, lng)
     } catch (err) {
-      console.error("Place details error:", err)
     }
   }
 
@@ -163,7 +160,6 @@ export default function LocationStep() {
 
       setLakeOptions(merged)
     } catch (err) {
-      console.error("Error finding lakes:", err)
       setLakeOptions([])
     } finally {
       setLoading(false)
@@ -241,7 +237,7 @@ export default function LocationStep() {
                     s.addressStatusText,
                     addressTaken && s.addressStatusTextWarning,
                   ]}>
-                    {addressTaken ? "⚠ Address already registered" : "✓ Address verified"}
+                    {addressTaken ? "Address already registered" : "Address verified"}
                   </Text>
               }
             </View>

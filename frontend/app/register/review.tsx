@@ -64,7 +64,7 @@ function EditableRow<K extends keyof RegisterData>({
         <Text style={s.reviewRowLabel}>{label}</Text>
         <TouchableOpacity onPress={() => setEditing(isEditing ? null : field)}>
           <Text style={isEditing ? s.editButtonActive : s.editButton}>
-            {isEditing ? "✕ Cancel" : "✏️ Edit"}
+            {isEditing ? "Cancel" : "Edit"}
           </Text>
         </TouchableOpacity>
       </View>

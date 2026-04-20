@@ -8,6 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { api, SearchItemResult, SearchUserResult, SearchCommunityResult } from '../../services/api';
 import { ProfileModal } from 'app/components/main';
+import { MessagesPanel } from '../components/MessagesPanel';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -41,6 +42,11 @@ export default function SearchScreen() {
   const [selectedUserItems, setSelectedUserItems] = useState<SearchItemResult[]>([]);
   const [userLoading, setUserLoading] = useState(false);
 
+  // Messaging
+  const [showMessages, setShowMessages] = useState(false);
+  const [initialDMId, setInitialDMId] = useState<string | null>(null);
+  const [initialDMName, setInitialDMName] = useState<string>('');
+
   // Get user's community on mount
   useEffect(() => {
     const getUserCommunity = async () => {
@@ -53,7 +59,6 @@ export default function SearchScreen() {
           setCurrentUserId(profile.id);
         }
       } catch (error) {
-        console.log('Could not fetch user profile');
       }
     };
     getUserCommunity();
@@ -94,7 +99,6 @@ export default function SearchScreen() {
           const itemResults = await api.search.items(searchQuery, communityId, 50);
           newResults.items = itemResults || [];
         } catch (error) {
-          console.log('Items search failed');
         }
       }
 
@@ -104,7 +108,6 @@ export default function SearchScreen() {
           const userResults = await api.search.users(searchQuery, communityId, 50);
           newResults.users = userResults || [];
         } catch (error) {
-          console.log('Users search failed');
         }
       }
 
@@ -114,13 +117,11 @@ export default function SearchScreen() {
           const communityResults = await api.search.communities(searchQuery, 50);
           newResults.communities = communityResults || [];
         } catch (error) {
-          console.log('Communities search failed');
         }
       }
 
       setResults(newResults);
     } catch (error) {
-      console.log('Search error:', error);
     } finally {
       setLoading(false);
     }
@@ -287,7 +288,11 @@ export default function SearchScreen() {
                         </View>
                         <View style={s.itemResultFooter}>
                           <Text style={s.itemResultPrice}>${item.price}</Text>
-                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                          <TouchableOpacity 
+                            style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
+                            onPress={() => router.push(`/main/profile/${item.owner_id}`)}
+                            activeOpacity={0.7}
+                          >
                             <Text style={s.itemResultSeller}>
                               { (item.owner_is_business && item.owner_business_name) ? item.owner_business_name : item.owner_username }
                             </Text>
@@ -296,7 +301,7 @@ export default function SearchScreen() {
                                     <Text style={[s.adCardSponsored, { fontSize: 7 }]}>Business</Text>
                                 </View>
                             )}
-                          </View>
+                          </TouchableOpacity>
                         </View>
                       </View>
                     </TouchableOpacity>
@@ -384,7 +389,7 @@ export default function SearchScreen() {
                       )}
                       <View style={s.communityResultFooter}>
                         {community.lake_name && (
-                          <Text style={s.communityResultLake}>📍 {community.lake_name}</Text>
+                          <Text style={s.communityResultLake}>{community.lake_name}</Text>
                         )}
                         <Text style={s.communityResultMembers}>{community.member_count} members</Text>
                       </View>
@@ -413,35 +418,35 @@ export default function SearchScreen() {
                 >
                   <Text style={s.detailName}>{selectedItem.name}</Text>
                   <Text style={s.detailPrice}>${selectedItem.price}</Text>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-                    <Text style={s.detailSeller}>
-                        Posted by: { (selectedItem.owner_is_business && selectedItem.owner_business_name) ? selectedItem.owner_business_name : selectedItem.owner_username }
-                    </Text>
-                    {selectedItem.owner_is_business && (
-                        <View style={[s.adCardBadge, { paddingHorizontal: 6, paddingVertical: 2 }]}>
-                            <Text style={[s.adCardSponsored, { fontSize: 8 }]}>Business</Text>
-                        </View>
-                    )}
-                  </View>
+                  
+                  <Text style={s.detailDesc}>{selectedItem.description}</Text>
+                  <Text style={[s.detailText, { fontSize: 12, color: '#666', marginTop: 8 }]}>Category: {selectedItem.category}</Text>
+                  <Text style={[s.detailText, { fontSize: 12, color: '#666' }]}>Posted: {new Date(selectedItem.created_at).toLocaleDateString()}</Text>
                   
                   {selectedItem.owner_id !== currentUserId && (
-                    <TouchableOpacity
-                      style={[s.btn, s.btnBlue]}
-                      onPress={() => {
-                        setSelectedItem(null);
-                        router.push(`/main/profile/${selectedItem.owner_id}`);
-                      }}
-                    >
-                      <Text style={s.btnText}>View Seller Profile</Text>
-                    </TouchableOpacity>
+                    <>
+                      <TouchableOpacity
+                        style={[s.btn, s.btnBlue]}
+                        onPress={() => {
+                          setSelectedItem(null);
+                          setInitialDMId(selectedItem.owner_id);
+                          setInitialDMName(selectedItem.owner_business_name || selectedItem.owner_username);
+                          setShowMessages(true);
+                        }}
+                      >
+                        <Text style={s.btnText}>Message Seller</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={[s.btn, s.btnCancel]}
+                        onPress={() => {
+                          setSelectedItem(null);
+                          router.push(`/main/profile/${selectedItem.owner_id}`);
+                        }}
+                      >
+                        <Text style={s.btnCancelText}>View Seller Profile</Text>
+                      </TouchableOpacity>
+                    </>
                   )}
-
-                  <Text style={s.detailDesc}>{selectedItem.description}</Text>
-                  <View style={s.contactBox}>
-                    <Text style={s.contactTitle}>Item Details</Text>
-                    <Text style={s.contactText}>Category: {selectedItem.category}</Text>
-                    <Text style={s.contactText}>Posted: {new Date(selectedItem.created_at).toLocaleDateString()}</Text>
-                  </View>
                   <TouchableOpacity
                     style={[s.btn, s.btnCancel]}
                     onPress={() => setSelectedItem(null)}
@@ -471,6 +476,16 @@ export default function SearchScreen() {
           router.push(`/main/profile/${id}`)
         }}
       />
+
+      {/* ── MESSAGING ── */}
+      {showMessages && (
+        <MessagesPanel
+          onClose={() => { setShowMessages(false); setInitialDMId(null); setInitialDMName(''); }}
+          currentUserId={currentUserId}
+          initialChatId={initialDMId || undefined}
+          initialChatName={initialDMName}
+        />
+      )}
     </SafeAreaView>
   );
 }

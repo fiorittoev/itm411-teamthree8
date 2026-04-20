@@ -14,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../services/supabase';
 import * as ImagePicker from 'expo-image-picker';
 import { mainStyles as s } from '../styles/main/mainStyles';
+import { COLORS } from '../styles/theme';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -241,7 +242,6 @@ export default function SettingsScreen() {
       const json = await res.json();
       setSuggestions(json.predictions?.slice(0, 5) ?? []);
     } catch (err) {
-      console.error('Autocomplete error:', err);
     }
   }
 
@@ -272,7 +272,6 @@ export default function SettingsScreen() {
       const { lat, lng } = json.result.geometry.location;
       findNearbyLakes(lat, lng);
     } catch (err) {
-      console.error('Place details error:', err);
     }
   }
 
@@ -300,7 +299,6 @@ export default function SettingsScreen() {
 
       setLakeOptions(merged);
     } catch (err) {
-      console.error('Error finding lakes:', err);
     } finally {
       setAddrLoading(false);
       setAddrSearched(true);
@@ -595,7 +593,7 @@ export default function SettingsScreen() {
                 {addressConfirmed && (
                   <View style={s.addressConfirmed}>
                     <Text style={s.addressConfirmedLabel}>
-                      ✓ Address confirmed
+                      Address confirmed
                     </Text>
                     <Text style={s.addressConfirmedText}>{fullAddrPreview}</Text>
                     <TouchableOpacity onPress={resetAddressFlow} style={s.addressChangeLink}>
@@ -650,7 +648,7 @@ export default function SettingsScreen() {
                               {lake.id ? 'Existing community' : 'New — will be created'}
                             </Text>
                           </View>
-                          {selected && <Text style={s.communityOptionCheck}>✓</Text>}
+                          {selected && <Ionicons name="checkmark" size={16} color={COLORS.primary} />}
                         </TouchableOpacity>
                       );
                     })}

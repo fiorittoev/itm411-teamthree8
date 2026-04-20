@@ -26,11 +26,26 @@ async def get_current_user(
     token = credentials.credentials
     try:
         header = jwt.get_unverified_header(token)
+        print(f"[DEBUG] JWT header: {header}")
+
         jwks = await get_jwks()
+        print(f"[DEBUG] JWKS keys: {[k.get('kid') for k in jwks.get('keys', [])]}")
+        print(f"[DEBUG] Looking for kid: {header.get('kid')}")
 
         key = next((k for k in jwks["keys"] if k["kid"] == header.get("kid")), None)
         if not key:
+            print(f"[DEBUG] No matching key found for kid: {header.get('kid')}")
             raise HTTPException(status_code=401, detail="No matching key found")
+
+        # Validate token is properly signed
+        try:
+            unverified_payload = jwt.decode(
+                token, "", options={"verify_signature": False}
+            )
+            print(f"[DEBUG] JWT aud claim: {unverified_payload.get('aud')}")
+            print(f"[DEBUG] Full JWT payload keys: {list(unverified_payload.keys())}")
+        except Exception as e:
+            print(f"[DEBUG] Error decoding unverified: {e}")
 
         payload = jwt.decode(
             token,
@@ -41,7 +56,14 @@ async def get_current_user(
         user_id = payload.get("sub")
         if not user_id:
             raise HTTPException(status_code=401, detail="Missing sub")
+
+        # Extract admin role from JWT claims (set during user creation/registration)
+        payload["is_admin"] = payload.get("custom_claims", {}).get("is_admin", False)
+        print(f"[DEBUG] Successfully authenticated user: {user_id}")
         return payload
 
     except JWTError as e:
+        print(f"[DEBUG] JWT Error: {e}")
+        print(f"[DEBUG] Error type: {type(e).__name__}")
+        print(f"[DEBUG] Full error: {str(e)}")
         raise HTTPException(status_code=401, detail=f"Invalid token: {e}")

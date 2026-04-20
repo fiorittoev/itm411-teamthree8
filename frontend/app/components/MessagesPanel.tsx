@@ -8,6 +8,7 @@ import { api, ConversationOut, MessageOut } from '../../services/api';
 import { mainStyles as s } from '../styles/main/mainStyles';
 import { UserListItem } from './ui/UserListItem';
 import { PanelHeader } from './ui/PanelHeader';
+import { COLORS, SPACING } from '../styles/theme';
 
 export function MessagesPanel({ 
   onClose, 
@@ -105,15 +106,15 @@ export function MessagesPanel({
     return (
       <View style={{
         alignSelf: isMe ? 'flex-end' : 'flex-start',
-        backgroundColor: isMe ? '#4F728C' : '#e0e0e0',
-        padding: 10,
+        backgroundColor: isMe ? COLORS.primary : COLORS.backgroundLight,
+        padding: SPACING.sm,
         borderRadius: 16,
         maxWidth: '80%',
-        marginVertical: 4,
-        marginHorizontal: 10
+        marginVertical: SPACING.xs,
+        marginHorizontal: SPACING.md
       }}>
-        <Text style={{ color: isMe ? 'white' : 'black' }}>{item.content}</Text>
-        <Text style={{ fontSize: 10, color: isMe ? '#cde' : '#888', alignSelf: 'flex-end', marginTop: 4 }}>
+        <Text style={{ color: isMe ? 'white' : COLORS.text, fontSize: 14 }}>{item.content}</Text>
+        <Text style={{ fontSize: 10, color: isMe ? COLORS.borderLight : COLORS.textMuted, alignSelf: 'flex-end', marginTop: SPACING.xs }}>
             {formatMessageTime(item.created_at)}
         </Text>
       </View>
@@ -122,7 +123,7 @@ export function MessagesPanel({
 
   if (activeChatId) {
     return (
-      <KeyboardAvoidingView style={[s.connectionsPanel, { paddingBottom: 10 }]} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <View style={[s.connectionsPanel, { maxWidth: 550, paddingHorizontal: 0, paddingVertical: 0, alignSelf: 'center' }]}>
         <PanelHeader 
           title={activeChatName} 
           onClose={onClose} 
@@ -131,49 +132,50 @@ export function MessagesPanel({
 
         {/* Message List */}
         {loading ? (
-             <ActivityIndicator color="#4F728C" style={{ marginTop: 20, flex: 1 }} />
+             <ActivityIndicator color={COLORS.primary} style={{ marginTop: 20, flex: 1 }} />
         ) : (
             <FlatList
                 ref={messagesEndRef}
                 data={messages}
                 keyExtractor={m => m.id}
                 renderItem={renderMessage}
-                contentContainerStyle={{ paddingVertical: 10 }}
+                contentContainerStyle={{ paddingVertical: SPACING.sm }}
                 onContentSizeChange={() => messagesEndRef.current?.scrollToEnd({ animated: true })}
                 onLayout={() => messagesEndRef.current?.scrollToEnd({ animated: true })}
             />
         )}
         
-        <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10, paddingTop: 10, borderTopWidth: 1, borderColor: '#eee' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'flex-end', paddingHorizontal: SPACING.sm, paddingVertical: SPACING.sm, borderTopWidth: 1, borderTopColor: COLORS.borderLight, backgroundColor: COLORS.surface }}>
             <TextInput
-                 style={s.postInput}
+                 style={[s.postInput, { flex: 1, marginRight: SPACING.sm }]}
                  placeholder="Type a message..."
+                 placeholderTextColor={COLORS.textMuted}
                  value={inputText}
                  onChangeText={setInputText}
                  multiline
             />
-            <TouchableOpacity onPress={sendMessage} style={{ padding: 10, marginLeft: 5 }}>
-                 <Ionicons name="send" size={24} color="#4F728C" />
+            <TouchableOpacity onPress={sendMessage} style={{ padding: SPACING.sm }}>
+                 <Ionicons name="send" size={24} color={COLORS.primary} />
             </TouchableOpacity>
         </View>
-      </KeyboardAvoidingView>
+      </View>
     );
   }
 
   return (
-    <View style={s.connectionsPanel}>
+    <View style={[s.connectionsPanel, { maxWidth: 550, alignSelf: 'center' }]}>
       <PanelHeader title="Messages" onClose={onClose} />
 
       {/* List */}
       {loading ? (
-        <ActivityIndicator color="#4F728C" style={{ marginTop: 20 }} />
+        <ActivityIndicator color={COLORS.primary} style={{ marginTop: 20 }} />
       ) : (
         <FlatList
           data={conversations}
           keyExtractor={(c) => c.other_user_id}
           renderItem={renderConversation}
           ListEmptyComponent={
-            <Text style={s.connectionEmpty}>
+            <Text style={[s.connectionEmpty, { color: COLORS.textMuted }]}>
               No conversations yet. Connect with someone to chat!
             </Text>
           }

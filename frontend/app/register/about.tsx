@@ -49,7 +49,7 @@ export default function AboutStep() {
 
       <View style={[s.card, { backgroundColor: COLORS.lightBlue, borderColor: COLORS.primary + '20' }]}>
         <Text style={[s.bodyText, { color: COLORS.primary, fontSize: 13, fontWeight: '500' }]}>
-          💡 Tip: Mention your favorite lake activities or if you're new to the area!
+          Tip: Mention your favorite lake activities or if you're new to the area!
         </Text>
       </View>
     </View>

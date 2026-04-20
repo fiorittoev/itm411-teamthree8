@@ -7,6 +7,7 @@ import { mainStyles as s } from '../styles/main/mainStyles';
 import { api, AdOut } from '../../services/api';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { COLORS, SPACING, TYPOGRAPHY } from '../styles/theme';
 
 export default function SubmitAdScreen() {
   const router = useRouter();
@@ -53,7 +54,7 @@ export default function SubmitAdScreen() {
       setLinkUrl('');
       setSubmitted((prev) => !prev); // trigger reload
       Alert.alert(
-        '✅ Ad Submitted',
+        'Ad Submitted',
         'Your ad request has been sent for approval. You\'ll be notified when it goes live.',
         [{ text: 'OK' }],
       );
@@ -71,29 +72,29 @@ export default function SubmitAdScreen() {
   };
 
   const statusLabel = (status: string) => {
-    if (status === 'approved') return '✅ Approved';
-    if (status === 'rejected') return '❌ Rejected';
-    return '⏳ Pending';
+    if (status === 'approved') return 'Approved';
+    if (status === 'rejected') return 'Rejected';
+    return 'Pending';
   };
 
   return (
     <SafeAreaView style={[s.safe, isMobile && s.safeMobile]}>
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
+      <ScrollView contentContainerStyle={{ padding: SPACING.lg, paddingBottom: SPACING.xxl }}>
 
         {/* Header */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20, gap: 10 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: SPACING.xl, gap: SPACING.md }}>
           <TouchableOpacity onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color="#4F728C" />
+            <Ionicons name="arrow-back" size={24} color={COLORS.primary} />
           </TouchableOpacity>
-          <Text style={{ fontSize: 20, fontWeight: '700', color: '#222' }}>Submit an Ad</Text>
+          <Text style={[TYPOGRAPHY.h2, { color: COLORS.text }]}>Submit an Ad</Text>
         </View>
 
         {/* Info banner */}
         <View style={{
-          backgroundColor: '#e8f4f8', borderRadius: 10, padding: 14, marginBottom: 20,
-          borderLeftWidth: 4, borderLeftColor: '#4F728C',
+          backgroundColor: COLORS.backgroundLight, borderRadius: 10, padding: SPACING.md, marginBottom: SPACING.lg,
+          borderLeftWidth: 4, borderLeftColor: COLORS.primary,
         }}>
-          <Text style={{ fontSize: 13, color: '#333', lineHeight: 20 }}>
+          <Text style={[TYPOGRAPHY.body, { color: COLORS.text, lineHeight: 20 }]}>
             Sponsored ads appear in community and home feeds every few posts with a clear "Sponsored" label.
             After submission, an admin at <Text style={{ fontWeight: '600' }}>fiorittoev@gmail.com</Text> will
             review and approve your ad before it goes live.
@@ -102,25 +103,25 @@ export default function SubmitAdScreen() {
 
         {/* Form */}
         <View style={s.postBox}>
-          <Text style={[s.postTitle, { marginBottom: 14 }]}>New Ad</Text>
+          <Text style={[s.postTitle, { marginBottom: SPACING.md }]}>New Ad</Text>
 
           <Text style={s.postLabel}>Ad Type</Text>
-          <View style={{ flexDirection: 'row', gap: 10, marginBottom: 16 }}>
+          <View style={{ flexDirection: 'row', gap: SPACING.sm, marginBottom: SPACING.lg }}>
             <TouchableOpacity 
               onPress={() => setAdType('post')}
               style={[{
-                paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, borderWidth: 1.5,
-              }, adType === 'post' ? { backgroundColor: '#4F728C', borderColor: '#4F728C' } : { borderColor: '#ccc' }]}
+                paddingHorizontal: SPACING.lg, paddingVertical: SPACING.sm, borderRadius: 20, borderWidth: 1.5,
+              }, adType === 'post' ? { backgroundColor: COLORS.primary, borderColor: COLORS.primary } : { borderColor: COLORS.borderLight }]}
             >
-              <Text style={{ fontWeight: '600', fontSize: 13, color: adType === 'post' ? 'white' : '#666' }}>Post Ad</Text>
+              <Text style={[TYPOGRAPHY.bodyStrong, { fontSize: 13, color: adType === 'post' ? 'white' : COLORS.textMuted }]}>Post Ad</Text>
             </TouchableOpacity>
             <TouchableOpacity 
               onPress={() => setAdType('marketplace')}
               style={[{
-                paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, borderWidth: 1.5,
-              }, adType === 'marketplace' ? { backgroundColor: '#4F728C', borderColor: '#4F728C' } : { borderColor: '#ccc' }]}
+                paddingHorizontal: SPACING.lg, paddingVertical: SPACING.sm, borderRadius: 20, borderWidth: 1.5,
+              }, adType === 'marketplace' ? { backgroundColor: COLORS.primary, borderColor: COLORS.primary } : { borderColor: COLORS.borderLight }]}
             >
-              <Text style={{ fontWeight: '600', fontSize: 13, color: adType === 'marketplace' ? 'white' : '#666' }}>Listing Ad</Text>
+              <Text style={[TYPOGRAPHY.bodyStrong, { fontSize: 13, color: adType === 'marketplace' ? 'white' : COLORS.textMuted }]}>Listing Ad</Text>
             </TouchableOpacity>
           </View>
 
@@ -128,25 +129,28 @@ export default function SubmitAdScreen() {
           <TextInput
             style={s.postInput}
             placeholder="Short, eye-catching title"
+            placeholderTextColor={COLORS.textMuted}
             value={title}
             onChangeText={setTitle}
             maxLength={80}
           />
 
-          <Text style={[s.postLabel, { marginTop: 12 }]}>Ad Body *</Text>
+          <Text style={[s.postLabel, { marginTop: SPACING.md }]}>Ad Body *</Text>
           <TextInput
             style={[s.postInput, { minHeight: 80, textAlignVertical: 'top' }]}
             placeholder="Describe your product or service..."
+            placeholderTextColor={COLORS.textMuted}
             value={body}
             onChangeText={setBody}
             multiline
             maxLength={500}
           />
 
-          <Text style={[s.postLabel, { marginTop: 12 }]}>Link URL (optional)</Text>
+          <Text style={[s.postLabel, { marginTop: SPACING.md }]}>Link URL (optional)</Text>
           <TextInput
             style={s.postInput}
             placeholder="https://yourbusiness.com"
+            placeholderTextColor={COLORS.textMuted}
             value={linkUrl}
             onChangeText={setLinkUrl}
             keyboardType="url"
@@ -154,7 +158,7 @@ export default function SubmitAdScreen() {
           />
 
           <TouchableOpacity
-            style={[s.btn, s.btnBlue, { marginTop: 16, opacity: submitting ? 0.6 : 1 }]}
+            style={[s.btn, s.btnBlue, { marginTop: SPACING.lg, opacity: submitting ? 0.6 : 1 }]}
             onPress={handleSubmit}
             disabled={submitting}
           >
@@ -166,33 +170,33 @@ export default function SubmitAdScreen() {
         </View>
 
         {/* My ads */}
-        <Text style={{ fontSize: 16, fontWeight: '700', color: '#222', marginTop: 24, marginBottom: 10 }}>
+        <Text style={[TYPOGRAPHY.h3, { color: COLORS.text, marginTop: SPACING.xl, marginBottom: SPACING.md }]}>
           My Ad Requests
         </Text>
 
         {loadingAds ? (
-          <ActivityIndicator color="#4F728C" />
+          <ActivityIndicator color={COLORS.primary} />
         ) : myAds.length === 0 ? (
-          <Text style={{ color: '#888', textAlign: 'center', marginTop: 8 }}>
+          <Text style={[TYPOGRAPHY.body, { color: COLORS.textMuted, textAlign: 'center', marginTop: SPACING.md }]}>
             No ad requests yet.
           </Text>
         ) : (
           myAds.map((ad) => (
             <View key={ad.id} style={{
-              backgroundColor: 'white', borderRadius: 10, padding: 14,
-              marginBottom: 10, borderWidth: 1, borderColor: '#eee',
+              backgroundColor: COLORS.surface, borderRadius: 10, padding: SPACING.md,
+              marginBottom: SPACING.sm, borderWidth: 1, borderColor: COLORS.borderLight,
             }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <Text style={{ fontWeight: '700', fontSize: 15, flex: 1, color: '#222' }}>{ad.title}</Text>
-                <Text style={{ fontSize: 12, fontWeight: '600', color: statusColor(ad.status) }}>
+                <Text style={[TYPOGRAPHY.bodyStrong, { flex: 1, color: COLORS.text }]}>{ad.title}</Text>
+                <Text style={[TYPOGRAPHY.caption, { fontWeight: '600', color: statusColor(ad.status) }]}>
                   {statusLabel(ad.status)}
                 </Text>
               </View>
-              <Text style={{ color: '#555', marginTop: 4, fontSize: 13 }}>{ad.body}</Text>
+              <Text style={[TYPOGRAPHY.body, { color: COLORS.textMuted, marginTop: SPACING.xs }]}>{ad.body}</Text>
               {ad.link_url ? (
-                <Text style={{ color: '#4F728C', fontSize: 12, marginTop: 4 }}>{ad.link_url}</Text>
+                <Text style={[TYPOGRAPHY.caption, { color: COLORS.primary, marginTop: SPACING.xs }]}>{ad.link_url}</Text>
               ) : null}
-              <Text style={{ color: '#aaa', fontSize: 11, marginTop: 6 }}>
+              <Text style={[TYPOGRAPHY.tiny, { color: COLORS.borderDark, marginTop: SPACING.xs }]}>
                 Submitted {new Date(ad.created_at).toLocaleDateString()}
               </Text>
             </View>

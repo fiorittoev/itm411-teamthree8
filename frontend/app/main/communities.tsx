@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { api, SearchItemResult, SearchUserResult, PostOut } from '../../services/api';
 import { supabase } from '../../services/supabase';
 import { PostCard, PostModal, DeleteConfirmModal, ProfileModal, AdCard, injectAds } from '../components/main';
+import { MessagesPanel } from '../components/MessagesPanel';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -67,6 +68,11 @@ export default function CommunitiesScreen() {
   const [selectedItem, setSelectedItem] = useState<SearchItemResult | null>(null);
   const [selectedUser, setSelectedUser] = useState<SearchUserResult | null>(null);
   const [selectedUserItems, setSelectedUserItems] = useState<SearchItemResult[]>([]);
+
+  // Messaging
+  const [showMessages, setShowMessages] = useState(false);
+  const [initialDMId, setInitialDMId] = useState<string | null>(null);
+  const [initialDMName, setInitialDMName] = useState<string>('');
 
   // ── Initial load ─────────────────────────────────────────────────────────────
 
@@ -130,7 +136,6 @@ export default function CommunitiesScreen() {
       }
     } catch (error) {
       Alert.alert('Error', 'Failed to load community');
-      console.error('initialLoad:', error);
     } finally {
       setLoading(false);
     }
@@ -361,7 +366,12 @@ export default function CommunitiesScreen() {
                           </View>
                           <View style={s.itemResultFooter}>
                             <Text style={s.itemResultPrice}>${item.price}</Text>
-                            <Text style={s.itemResultSeller}>{item.owner_username}</Text>
+                            <TouchableOpacity 
+                              onPress={() => router.push(`/main/profile/${item.owner_id}`)}
+                              activeOpacity={0.7}
+                            >
+                              <Text style={s.itemResultSeller}>{item.owner_username}</Text>
+                            </TouchableOpacity>
                           </View>
                         </View>
                       </TouchableOpacity>
@@ -444,28 +454,35 @@ export default function CommunitiesScreen() {
                 >
                   <Text style={s.detailName}>{selectedItem.name}</Text>
                   <Text style={s.detailPrice}>${selectedItem.price}</Text>
-                  <Text style={s.detailSeller}>Posted by: {selectedItem.owner_username}</Text>
-
-                  {selectedItem.owner_id !== currentAuthorId && (
-                    <TouchableOpacity
-                      style={[s.btn, s.btnBlue]}
-                      onPress={() => {
-                        setSelectedItem(null);
-                        router.push(`/main/profile/${selectedItem.owner_id}`);
-                      }}
-                    >
-                      <Text style={s.btnText}>View Seller Profile</Text>
-                    </TouchableOpacity>
-                  )}
 
                   <Text style={s.detailDesc}>{selectedItem.description}</Text>
-                  <View style={s.contactBox}>
-                    <Text style={s.contactTitle}>Item Details</Text>
-                    <Text style={s.contactText}>Category: {selectedItem.category}</Text>
-                    <Text style={s.contactText}>
-                      Posted: {new Date(selectedItem.created_at).toLocaleDateString()}
-                    </Text>
-                  </View>
+                  <Text style={[s.detailText, { fontSize: 12, color: '#666', marginTop: 8 }]}>Category: {selectedItem.category}</Text>
+                  <Text style={[s.detailText, { fontSize: 12, color: '#666' }]}>Posted: {new Date(selectedItem.created_at).toLocaleDateString()}</Text>
+
+                  {selectedItem.owner_id !== currentAuthorId && (
+                    <>
+                      <TouchableOpacity
+                        style={[s.btn, s.btnBlue]}
+                        onPress={() => {
+                          setSelectedItem(null);
+                          setInitialDMId(selectedItem.owner_id);
+                          setInitialDMName(selectedItem.owner_username);
+                          setShowMessages(true);
+                        }}
+                      >
+                        <Text style={s.btnText}>Message Seller</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={[s.btn, s.btnCancel]}
+                        onPress={() => {
+                          setSelectedItem(null);
+                          router.push(`/main/profile/${selectedItem.owner_id}`);
+                        }}
+                      >
+                        <Text style={s.btnCancelText}>View Seller Profile</Text>
+                      </TouchableOpacity>
+                    </>
+                  )}
                   <TouchableOpacity style={[s.btn, s.btnCancel]} onPress={() => setSelectedItem(null)}>
                     <Text style={s.btnCancelText}>Close</Text>
                   </TouchableOpacity>
@@ -502,6 +519,16 @@ export default function CommunitiesScreen() {
         onClose={() => setDeleteModalVisible(false)}
         onDeleted={() => fetchPosts(activeCommunityId)}
       />
+
+      {/* ── MESSAGING ── */}
+      {showMessages && (
+        <MessagesPanel
+          onClose={() => { setShowMessages(false); setInitialDMId(null); setInitialDMName(''); }}
+          currentUserId={currentAuthorId}
+          initialChatId={initialDMId || undefined}
+          initialChatName={initialDMName}
+        />
+      )}
     </SafeAreaView>
   );
 }

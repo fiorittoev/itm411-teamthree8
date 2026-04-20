@@ -25,7 +25,6 @@ export default function TabLayout() {
         setIsBusiness(profile.is_business);
         setProfileImageUrl(profile.profile_image_url ?? null);
       } catch (e) {
-        console.warn('Error fetching profile in layout', e);
       }
     }
   }

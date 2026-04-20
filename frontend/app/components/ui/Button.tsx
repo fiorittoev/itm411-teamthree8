@@ -1,11 +1,12 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, StyleProp, ViewStyle, TextStyle, ActivityIndicator } from 'react-native';
-import { COLORS } from '../../styles/theme';
+import { COLORS, SPACING, TYPOGRAPHY } from '../../styles/theme';
 
 interface ButtonProps {
   title: string;
   onPress: () => void;
   variant?: 'primary' | 'secondary' | 'danger';
+  size?: 'small' | 'medium' | 'large';
   style?: StyleProp<ViewStyle>;
   textStyle?: StyleProp<TextStyle>;
   disabled?: boolean;
@@ -15,7 +16,8 @@ interface ButtonProps {
 export function Button({ 
   title, 
   onPress, 
-  variant = 'primary', 
+  variant = 'primary',
+  size = 'medium',
   style, 
   textStyle, 
   disabled,
@@ -46,10 +48,35 @@ export function Button({
     }
   };
 
+  const getSizeStyles = () => {
+    switch (size) {
+      case 'small':
+        return styles.sizeSmall;
+      case 'large':
+        return styles.sizeLarge;
+      case 'medium':
+      default:
+        return styles.sizeMedium;
+    }
+  };
+
+  const getSizeTextStyles = () => {
+    switch (size) {
+      case 'small':
+        return styles.sizeSmallText;
+      case 'large':
+        return styles.sizeLargeText;
+      case 'medium':
+      default:
+        return styles.sizeMediumText;
+    }
+  };
+
   return (
     <TouchableOpacity
       style={[
         styles.baseButton,
+        getSizeStyles(),
         getVariantStyles(),
         disabled && styles.disabledButton,
         style
@@ -61,7 +88,7 @@ export function Button({
       {loading ? (
         <ActivityIndicator color={variant === 'secondary' ? COLORS.primary : COLORS.white} />
       ) : (
-        <Text style={[styles.baseText, getVariantTextStyles(), textStyle]}>
+        <Text style={[styles.baseText, getSizeTextStyles(), getVariantTextStyles(), textStyle]}>
           {title}
         </Text>
       )}
@@ -71,13 +98,25 @@ export function Button({
 
 const styles = StyleSheet.create({
   baseButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
   },
+  // Size variants
+  sizeSmall: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+  sizeMedium: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  sizeLarge: {
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+  },
+  // Color variants
   primaryButton: {
     backgroundColor: COLORS.primary,
   },
@@ -87,14 +126,23 @@ const styles = StyleSheet.create({
     borderColor: COLORS.primary,
   },
   dangerButton: {
-    backgroundColor: COLORS.danger,
+    backgroundColor: COLORS.error,
   },
   disabledButton: {
     opacity: 0.5,
   },
+  // Text styles
   baseText: {
-    fontSize: 15,
     fontWeight: '600',
+  },
+  sizeSmallText: {
+    ...TYPOGRAPHY.caption,
+  },
+  sizeMediumText: {
+    ...TYPOGRAPHY.bodyStrong,
+  },
+  sizeLargeText: {
+    ...TYPOGRAPHY.h3,
   },
   primaryText: {
     color: COLORS.white,
@@ -106,3 +154,4 @@ const styles = StyleSheet.create({
     color: COLORS.white,
   },
 });
+

@@ -22,6 +22,7 @@ import uuid
 from app.db.session import get_db
 from app.db.models import Item, Profile, Community
 from app.core.auth import get_current_user
+from app.dependencies import get_or_create_profile  # centralized profile creation
 
 router = APIRouter(prefix="/search", tags=["search"])
 
@@ -101,16 +102,6 @@ def get_user_community_ids(profile: Profile) -> list[uuid.UUID]:
     return [c.id for c in profile.communities] if profile.communities else []
 
 
-def get_or_create_profile_by_email(user: dict, db: Session) -> Profile:
-    email = user.get("email") or user.get("user_metadata", {}).get("email")
-    if not email:
-        raise HTTPException(status_code=400, detail="No email in token")
-    profile = db.query(Profile).filter(Profile.email == email).first()
-    if not profile:
-        raise HTTPException(status_code=404, detail="Profile not found")
-    return profile
-
-
 @router.get("/items")
 def search_items(
     q: str = Query("", min_length=0),
@@ -119,7 +110,7 @@ def search_items(
     db: Session = Depends(get_db),
     user=Depends(get_current_user),
 ):
-    profile = get_or_create_profile_by_email(user, db)
+    profile = get_or_create_profile(user, db)
     query = db.query(Item)
 
     if q and q.strip():
@@ -162,7 +153,7 @@ def search_users(
     db: Session = Depends(get_db),
     user=Depends(get_current_user),
 ):
-    profile = get_or_create_profile_by_email(user, db)
+    profile = get_or_create_profile(user, db)
     query = db.query(Profile)
 
     # Only filter out self if NOT searching within a specific community members list

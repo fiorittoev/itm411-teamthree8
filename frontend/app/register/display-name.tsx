@@ -35,7 +35,6 @@ export default function NameStep() {
 
       setTaken(!!existing)
     } catch (err) {
-      console.error("Username check error:", err)
     } finally {
       setChecking(false)
     }
@@ -93,4 +92,4 @@ export default function NameStep() {
       </View>
     </View>
   )
-}
+}

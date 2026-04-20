@@ -101,7 +101,6 @@ export default function ProfileScreen() {
               setMyProfileIdState(meData.id);
           }
       } catch (e) {
-          console.warn('Failed to fetch own profile', e);
       }
 
       const isMe = !userId || userId === myProfileId;

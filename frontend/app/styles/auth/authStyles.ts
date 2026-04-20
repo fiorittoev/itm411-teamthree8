@@ -1,9 +1,9 @@
 import { StyleSheet, Dimensions } from "react-native"
-import { COLORS, scale, isPhone } from "../theme"
+import { COLORS, SPACING, TYPOGRAPHY, scale, isPhone } from "../theme"
 
 const { width, height } = Dimensions.get('window')
 
-export { COLORS }
+export { COLORS, SPACING, TYPOGRAPHY }
 
 export const authStyles = StyleSheet.create({
   container: {
@@ -12,62 +12,58 @@ export const authStyles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: SPACING.xl,
     justifyContent: 'center',
     alignItems: 'center',
   },
   brandContainer: {
     alignItems: 'center',
-    marginBottom: 48,
+    marginBottom: SPACING.xxl,
   },
   brandTitle: {
-    fontSize: scale(32),
-    fontWeight: '800',
+    ...TYPOGRAPHY.display,
     color: COLORS.primary,
     letterSpacing: -1,
     textAlign: 'center',
   },
   brandSubtitle: {
-    fontSize: scale(16),
+    ...TYPOGRAPHY.body,
     color: COLORS.textMuted,
-    marginTop: 8,
+    marginTop: SPACING.sm,
     textAlign: 'center',
   },
   welcomeText: {
-    fontSize: scale(22),
-    fontWeight: '700',
+    ...TYPOGRAPHY.h2,
     color: COLORS.text,
-    marginBottom: 32,
+    marginBottom: SPACING.xl,
     textAlign: 'center',
   },
   buttonContainer: {
     width: '100%',
     maxWidth: 400,
-    gap: 16,
+    gap: SPACING.lg,
   },
   title: {
-    fontSize: scale(24),
-    fontWeight: "700",
+    ...TYPOGRAPHY.h1,
     color: COLORS.primary,
-    marginBottom: 24,
+    marginBottom: SPACING.xl,
     textAlign: "center",
   },
   label: {
-    fontSize: 14,
-    fontWeight: '600',
+    ...TYPOGRAPHY.bodyStrong,
     color: COLORS.text,
-    marginBottom: 8,
-    marginLeft: 4,
+    marginBottom: SPACING.sm,
+    marginLeft: SPACING.xs,
   },
   field: {
     backgroundColor: COLORS.surface,
     borderWidth: 1,
     borderColor: COLORS.border,
     borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
+    padding: SPACING.lg,
+    fontSize: TYPOGRAPHY.body.fontSize,
     color: COLORS.text,
-    marginBottom: 16,
+    marginBottom: SPACING.lg,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -76,18 +72,18 @@ export const authStyles = StyleSheet.create({
   },
   errorText: {
     color: COLORS.error,
-    fontSize: 13,
+    fontSize: TYPOGRAPHY.caption.fontSize,
     marginTop: -8,
-    marginBottom: 16,
-    marginLeft: 4,
+    marginBottom: SPACING.lg,
+    marginLeft: SPACING.xs,
   },
   linkContainer: {
-    marginTop: 24,
+    marginTop: SPACING.xl,
     alignItems: 'center',
   },
   linkText: {
     color: COLORS.primary,
-    fontSize: 15,
+    fontSize: TYPOGRAPHY.body.fontSize,
     fontWeight: '600',
   },
 })

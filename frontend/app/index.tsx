@@ -19,7 +19,6 @@ export default function RootIndex() {
         }
       } 
       catch (err) {
-        console.error('Error checking session:', err);
         router.replace('/options');
       }
     };

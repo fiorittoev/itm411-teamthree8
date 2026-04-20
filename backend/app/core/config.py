@@ -14,8 +14,8 @@ class Settings(BaseSettings):
 
     # Ads / email settings
     ADMIN_SECRET: str = "change-me-secret"
-    GMAIL_USER: str = ""
-    GMAIL_APP_PASSWORD: str = ""
+    ADMIN_EMAIL: str = "admin@example.com"
+    RESEND_API_KEY: str = ""
     API_BASE_URL: str = "http://localhost:8000"
 
     class Config:

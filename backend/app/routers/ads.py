@@ -15,16 +15,13 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional
 import uuid
-import smtplib
-import ssl
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timezone
 
 from app.db.session import get_db
 from app.db.models import Ad, AdStatus, AdType, Profile
 from app.core.auth import get_current_user
 from app.core.config import settings
+from app.dependencies import get_or_create_profile, requires_admin
 
 router = APIRouter()
 
@@ -32,29 +29,17 @@ router = APIRouter()
 # ─── Helpers ──────────────────────────────────────────────────────────────────
 
 
-def get_profile(user: dict, db: Session) -> Profile:
-    email = user.get("email") or user.get("user_metadata", {}).get("email")
-    if not email:
-        raise HTTPException(status_code=400, detail="No email in token")
-    profile = db.query(Profile).filter(Profile.email == email).first()
-    if not profile:
-        raise HTTPException(status_code=404, detail="Profile not found")
-    return profile
-
-
 def send_approval_email(ad: Ad, owner: Profile):
-    """Send an approval-request email to the admin with approve/reject links."""
-    if not settings.GMAIL_USER or not settings.GMAIL_APP_PASSWORD:
-        # If email is not configured, skip silently but log
-        print(f"[ads] Email not configured – ad {ad.id} pending manual approval")
+    """Send an approval-request email to the admin via Resend."""
+    if not settings.RESEND_API_KEY:
+        print(f"[DEBUG] RESEND_API_KEY not configured, skipping email")
         return
 
-    admin_email = "fiorittoev@gmail.com"
+    admin_email = settings.ADMIN_EMAIL
     base = settings.API_BASE_URL
-    secret = settings.ADMIN_SECRET
 
-    approve_url = f"{base}/ads/{ad.id}/approve?secret={secret}"
-    reject_url = f"{base}/ads/{ad.id}/reject?secret={secret}"
+    approve_url = f"{base}/admin/ads/{ad.id}/approve"
+    reject_url = f"{base}/admin/ads/{ad.id}/reject"
 
     html = f"""
     <h2>New Ad Request – MyMichiganLake</h2>
@@ -75,21 +60,29 @@ def send_approval_email(ad: Ad, owner: Profile):
     <small>Ad ID: {ad.id}</small>
     """
 
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = f"[Ad Request] [{ad.ad_type.value.upper()}] {ad.title}"
-    msg["From"] = settings.GMAIL_USER
-    msg["To"] = admin_email
-    msg.attach(MIMEText(html, "html"))
-
     try:
-        context = ssl.create_default_context()
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
-            server.login(settings.GMAIL_USER, settings.GMAIL_APP_PASSWORD)
-            server.sendmail(settings.GMAIL_USER, admin_email, msg.as_string())
-        print(f"[ads] Approval email sent for ad {ad.id}")
+        import resend
+
+        resend.api_key = settings.RESEND_API_KEY
+
+        # Use Resend's default onresend.dev domain (or verify your own in Resend dashboard)
+        email = resend.Emails.send(
+            {
+                "from": "onboarding@resend.dev",  # Default Resend domain - change after verifying your domain
+                "to": admin_email,
+                "subject": f"[Ad Request] [{ad.ad_type.value.upper()}] {ad.title}",
+                "html": html,
+            }
+        )
+        print(f"[DEBUG] Email sent successfully. Response: {email}")
     except Exception as e:
-        print(f"[ads] Failed to send email: {e}")
-        # Don't raise — ad is still submitted even if email fails
+        print(f"[ERROR] Failed to send approval email: {str(e)}")
+        import traceback
+
+        traceback.print_exc()
+        print(
+            f"[DEBUG] RESEND_API_KEY: {'SET' if settings.RESEND_API_KEY else 'NOT SET'}, ADMIN_EMAIL: {admin_email}"
+        )
 
 
 # ─── Schemas ──────────────────────────────────────────────────────────────────
@@ -98,7 +91,7 @@ def send_approval_email(ad: Ad, owner: Profile):
 class AdCreate(BaseModel):
     title: str
     body: str
-    ad_type: Optional[str] = "post"      # "post" | "marketplace"
+    ad_type: Optional[str] = "post"  # "post" | "marketplace"
     image: Optional[str] = None
     link_url: Optional[str] = None
 
@@ -128,7 +121,7 @@ def submit_ad(
     db: Session = Depends(get_db),
     user=Depends(get_current_user),
 ):
-    owner = get_profile(user, db)
+    owner = get_or_create_profile(user, db)
     if not owner.is_business:
         raise HTTPException(
             status_code=403,
@@ -163,7 +156,6 @@ def submit_ad(
 @router.get("/ads", response_model=list[AdOut])
 def list_approved_ads(
     db: Session = Depends(get_db),
-    user=Depends(get_current_user),
 ):
     """Returns all approved ads — used by the frontend to inject into feeds."""
     ads = (
@@ -185,7 +177,7 @@ def list_my_ads(
     user=Depends(get_current_user),
 ):
     """Business user can check the status of their own ads."""
-    owner = get_profile(user, db)
+    owner = get_or_create_profile(user, db)
     ads = (
         db.query(Ad)
         .filter(Ad.owner_id == owner.id)
@@ -198,12 +190,10 @@ def list_my_ads(
 @router.post("/ads/{ad_id}/approve", status_code=status.HTTP_200_OK)
 def approve_ad(
     ad_id: str,
-    secret: str = Query(...),
     db: Session = Depends(get_db),
+    _=Depends(requires_admin),
 ):
-    """Admin-only endpoint. Secured by ADMIN_SECRET query param."""
-    if secret != settings.ADMIN_SECRET:
-        raise HTTPException(status_code=403, detail="Invalid secret")
+    """Admin-only endpoint. Secured by JWT admin role."""
 
     try:
         ad = db.query(Ad).filter(Ad.id == uuid.UUID(ad_id)).first()
@@ -222,12 +212,10 @@ def approve_ad(
 @router.post("/ads/{ad_id}/reject", status_code=status.HTTP_200_OK)
 def reject_ad(
     ad_id: str,
-    secret: str = Query(...),
     db: Session = Depends(get_db),
+    _=Depends(requires_admin),
 ):
-    """Admin-only endpoint. Secured by ADMIN_SECRET query param."""
-    if secret != settings.ADMIN_SECRET:
-        raise HTTPException(status_code=403, detail="Invalid secret")
+    """Admin-only endpoint. Secured by JWT admin role."""
 
     try:
         ad = db.query(Ad).filter(Ad.id == uuid.UUID(ad_id)).first()
@@ -250,6 +238,7 @@ def _ad_out(ad: Ad, owner: Optional[Profile]) -> dict:
         "id": str(ad.id),
         "title": ad.title,
         "body": ad.body,
+        "ad_type": ad.ad_type.value if ad.ad_type else None,
         "image": ad.image,
         "link_url": ad.link_url,
         "status": ad.status.value if ad.status else "pending",
